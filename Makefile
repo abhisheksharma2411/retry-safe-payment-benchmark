@@ -80,6 +80,13 @@ pilot:
 figures:
 	$(PYTHON) analysis/make_figures.py
 
+## model-figures: paper outputs from the LLM evaluation (results/model_results.json)
+##   Separate from `figures` on purpose: that target regenerates the deterministic
+##   reference/mutant pilot, this one summarises a stochastic model sweep. Neither
+##   reads the other's input, and this one never touches pilot_results.json.
+model-figures:
+	$(PYTHON) analysis/make_model_figures.py
+
 ## reproduce-small: the main reviewer entry point (a few seconds end to end)
 reproduce-small: test pilot figures
 	@echo "reproduce-small complete: results/ and analysis/figures/ regenerated."

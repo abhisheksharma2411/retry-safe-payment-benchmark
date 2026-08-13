@@ -51,3 +51,6 @@ venv/
 *~
 .idea/
 .vscode/
+
+# Bundled results archive (build artifact, regenerate with `make model-figures` + zip)
+/t4_results_bundle.zip

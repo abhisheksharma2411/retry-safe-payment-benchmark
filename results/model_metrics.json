@@ -1,0 +1,1062 @@
+{
+  "generated_from": "results/model_results.json",
+  "n_records": 2730,
+  "n_candidates": 273,
+  "families": [
+    "capture",
+    "consumer",
+    "ledger",
+    "outbox",
+    "reconciliation",
+    "refund",
+    "saga"
+  ],
+  "samples_per_cell": 3,
+  "bootstrap": {
+    "replicates": 10000,
+    "seed": 20260813,
+    "percentiles": [
+      2.5,
+      97.5
+    ],
+    "resampling_unit": "semantic task family (n=7)",
+    "note": "schedules are nested within candidates and are NOT resampled; bootstrapping over records would understate the intervals"
+  },
+  "provenance": {
+    "claude-opus-4-6[1m]": {
+      "served_snapshot": "claude-opus-4-6[1m]",
+      "requested_as": [
+        "claude-opus-4-6[1m]"
+      ],
+      "model_snapshot": "",
+      "snapshot_date": "",
+      "display_name": "",
+      "release_date": null,
+      "training_cutoff": null,
+      "training_cutoff_source": "not exposed by the Claude Code CLI API",
+      "predates_publication": null,
+      "provider": "claude-cli"
+    },
+    "gemini-3-flash-preview": {
+      "served_snapshot": "gemini-3-flash-preview",
+      "requested_as": [
+        "gemini-3-flash-preview"
+      ],
+      "model_snapshot": "3-flash-preview-12-2025",
+      "snapshot_date": "2025-12",
+      "display_name": "Gemini 3 Flash Preview",
+      "release_date": null,
+      "training_cutoff": null,
+      "training_cutoff_source": "not exposed by the Gemini API",
+      "predates_publication": true,
+      "provider": "gemini"
+    },
+    "gemini-3.1-pro-preview": {
+      "served_snapshot": "gemini-3.1-pro-preview",
+      "requested_as": [
+        "gemini-3.1-pro-preview",
+        "gemini-pro-latest"
+      ],
+      "model_snapshot": "3.1-pro-preview-01-2026",
+      "snapshot_date": "2026-01",
+      "display_name": "Gemini 3.1 Pro Preview",
+      "release_date": null,
+      "training_cutoff": null,
+      "training_cutoff_source": "not exposed by the Gemini API",
+      "predates_publication": true,
+      "provider": "gemini"
+    },
+    "gemini-3.6-flash": {
+      "served_snapshot": "gemini-3.6-flash",
+      "requested_as": [
+        "gemini-flash-latest"
+      ],
+      "model_snapshot": "3.6-flash-07-2026",
+      "snapshot_date": "2026-07",
+      "display_name": "Gemini 3.6 Flash",
+      "release_date": null,
+      "training_cutoff": null,
+      "training_cutoff_source": "not exposed by the Gemini API",
+      "predates_publication": true,
+      "provider": "gemini"
+    }
+  },
+  "cells": {
+    "claude-opus-4-6[1m]||agentic": {
+      "system": "claude-opus-4-6[1m]",
+      "condition": "agentic",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "functional_pass1": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "unconditional_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 210,
+          "denominator": 210,
+          "saturated": true
+        },
+        "safety_given_functional": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 126,
+          "denominator": 126,
+          "saturated": true
+        },
+        "robust_success": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "hidden_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 126,
+          "denominator": 126,
+          "saturated": true
+        },
+        "public_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 84,
+          "denominator": 84,
+          "saturated": true
+        }
+      }
+    },
+    "gemini-3-flash-preview||domain_guided": {
+      "system": "gemini-3-flash-preview",
+      "condition": "domain_guided",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 0.9047619047619048,
+          "ci_low": 0.7142857142857143,
+          "ci_high": 1.0,
+          "numerator": 19,
+          "denominator": 21,
+          "saturated": false
+        },
+        "functional_pass1": {
+          "point": 0.9047619047619048,
+          "ci_low": 0.7142857142857143,
+          "ci_high": 1.0,
+          "numerator": 19,
+          "denominator": 21,
+          "saturated": false
+        },
+        "unconditional_safety": {
+          "point": 0.9,
+          "ci_low": 0.7095238095238096,
+          "ci_high": 1.0,
+          "numerator": 189,
+          "denominator": 210,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.9912280701754386,
+          "ci_low": 0.9736842105263158,
+          "ci_high": 1.0,
+          "numerator": 113,
+          "denominator": 114,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.8571428571428571,
+          "ci_low": 0.6666666666666666,
+          "ci_high": 1.0,
+          "numerator": 18,
+          "denominator": 21,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.8968253968253969,
+          "ci_low": 0.7063492063492064,
+          "ci_high": 1.0,
+          "numerator": 113,
+          "denominator": 126,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 0.9047619047619048,
+          "ci_low": 0.7142857142857143,
+          "ci_high": 1.0,
+          "numerator": 76,
+          "denominator": 84,
+          "saturated": false
+        }
+      }
+    },
+    "gemini-3-flash-preview||retrieval": {
+      "system": "gemini-3-flash-preview",
+      "condition": "retrieval",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "functional_pass1": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "unconditional_safety": {
+          "point": 0.9809523809523809,
+          "ci_low": 0.9619047619047619,
+          "ci_high": 1.0,
+          "numerator": 206,
+          "denominator": 210,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.9841269841269841,
+          "ci_low": 0.9682539682539683,
+          "ci_high": 1.0,
+          "numerator": 124,
+          "denominator": 126,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.9047619047619048,
+          "ci_low": 0.8095238095238095,
+          "ci_high": 1.0,
+          "numerator": 19,
+          "denominator": 21,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.9841269841269841,
+          "ci_low": 0.9682539682539683,
+          "ci_high": 1.0,
+          "numerator": 124,
+          "denominator": 126,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9523809523809523,
+          "ci_high": 1.0,
+          "numerator": 82,
+          "denominator": 84,
+          "saturated": false
+        }
+      }
+    },
+    "gemini-3-flash-preview||zero_shot": {
+      "system": "gemini-3-flash-preview",
+      "condition": "zero_shot",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 0.9523809523809523,
+          "ci_low": 0.8571428571428571,
+          "ci_high": 1.0,
+          "numerator": 20,
+          "denominator": 21,
+          "saturated": false
+        },
+        "functional_pass1": {
+          "point": 0.9523809523809523,
+          "ci_low": 0.8571428571428571,
+          "ci_high": 1.0,
+          "numerator": 20,
+          "denominator": 21,
+          "saturated": false
+        },
+        "unconditional_safety": {
+          "point": 0.9333333333333333,
+          "ci_low": 0.8380952380952381,
+          "ci_high": 0.9952380952380953,
+          "numerator": 196,
+          "denominator": 210,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.975,
+          "ci_low": 0.9416666666666667,
+          "ci_high": 1.0,
+          "numerator": 117,
+          "denominator": 120,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.8095238095238095,
+          "ci_low": 0.6190476190476191,
+          "ci_high": 0.9523809523809523,
+          "numerator": 17,
+          "denominator": 21,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.9285714285714286,
+          "ci_low": 0.8333333333333334,
+          "ci_high": 0.9920634920634921,
+          "numerator": 117,
+          "denominator": 126,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 0.9404761904761905,
+          "ci_low": 0.8452380952380952,
+          "ci_high": 1.0,
+          "numerator": 79,
+          "denominator": 84,
+          "saturated": false
+        }
+      }
+    },
+    "gemini-3.1-pro-preview||domain_guided": {
+      "system": "gemini-3.1-pro-preview",
+      "condition": "domain_guided",
+      "n_families": 7,
+      "n_candidates": 42,
+      "n_records": 420,
+      "metrics": {
+        "compile_rate": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9285714285714286,
+          "ci_high": 1.0,
+          "numerator": 41,
+          "denominator": 42,
+          "saturated": false
+        },
+        "functional_pass1": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9285714285714286,
+          "ci_high": 1.0,
+          "numerator": 41,
+          "denominator": 42,
+          "saturated": false
+        },
+        "unconditional_safety": {
+          "point": 0.9666666666666667,
+          "ci_low": 0.919047619047619,
+          "ci_high": 0.9952380952380953,
+          "numerator": 406,
+          "denominator": 420,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.983739837398374,
+          "ci_low": 0.967479674796748,
+          "ci_high": 0.996031746031746,
+          "numerator": 242,
+          "denominator": 246,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.8809523809523809,
+          "ci_low": 0.7857142857142857,
+          "ci_high": 0.9523809523809523,
+          "numerator": 37,
+          "denominator": 42,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.9603174603174603,
+          "ci_low": 0.9126984126984127,
+          "ci_high": 0.9920634920634921,
+          "numerator": 242,
+          "denominator": 252,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9285714285714286,
+          "ci_high": 1.0,
+          "numerator": 164,
+          "denominator": 168,
+          "saturated": false
+        }
+      }
+    },
+    "gemini-3.1-pro-preview||retrieval": {
+      "system": "gemini-3.1-pro-preview",
+      "condition": "retrieval",
+      "n_families": 7,
+      "n_candidates": 42,
+      "n_records": 420,
+      "metrics": {
+        "compile_rate": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9285714285714286,
+          "ci_high": 1.0,
+          "numerator": 41,
+          "denominator": 42,
+          "saturated": false
+        },
+        "functional_pass1": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9285714285714286,
+          "ci_high": 1.0,
+          "numerator": 41,
+          "denominator": 42,
+          "saturated": false
+        },
+        "unconditional_safety": {
+          "point": 0.9595238095238096,
+          "ci_low": 0.9142857142857143,
+          "ci_high": 0.9904761904761905,
+          "numerator": 403,
+          "denominator": 420,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.9715447154471545,
+          "ci_low": 0.9484126984126984,
+          "ci_high": 0.991869918699187,
+          "numerator": 239,
+          "denominator": 246,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.8095238095238095,
+          "ci_low": 0.6904761904761905,
+          "ci_high": 0.9285714285714286,
+          "numerator": 34,
+          "denominator": 42,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.9484126984126984,
+          "ci_low": 0.9047619047619048,
+          "ci_high": 0.9841269841269841,
+          "numerator": 239,
+          "denominator": 252,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 0.9761904761904762,
+          "ci_low": 0.9285714285714286,
+          "ci_high": 1.0,
+          "numerator": 164,
+          "denominator": 168,
+          "saturated": false
+        }
+      }
+    },
+    "gemini-3.1-pro-preview||zero_shot": {
+      "system": "gemini-3.1-pro-preview",
+      "condition": "zero_shot",
+      "n_families": 7,
+      "n_candidates": 42,
+      "n_records": 420,
+      "metrics": {
+        "compile_rate": {
+          "point": 0.8333333333333334,
+          "ci_low": 0.6904761904761905,
+          "ci_high": 0.9523809523809523,
+          "numerator": 35,
+          "denominator": 42,
+          "saturated": false
+        },
+        "functional_pass1": {
+          "point": 0.8333333333333334,
+          "ci_low": 0.6904761904761905,
+          "ci_high": 0.9523809523809523,
+          "numerator": 35,
+          "denominator": 42,
+          "saturated": false
+        },
+        "unconditional_safety": {
+          "point": 0.8023809523809524,
+          "ci_low": 0.6714285714285714,
+          "ci_high": 0.9143452380952372,
+          "numerator": 337,
+          "denominator": 420,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.9380952380952381,
+          "ci_low": 0.9017094017094017,
+          "ci_high": 0.9747474747474747,
+          "numerator": 197,
+          "denominator": 210,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.5238095238095238,
+          "ci_low": 0.3333333333333333,
+          "ci_high": 0.7142857142857143,
+          "numerator": 22,
+          "denominator": 42,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.7817460317460317,
+          "ci_low": 0.6507936507936508,
+          "ci_high": 0.8888888888888888,
+          "numerator": 197,
+          "denominator": 252,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 0.8333333333333334,
+          "ci_low": 0.6904761904761905,
+          "ci_high": 0.9523809523809523,
+          "numerator": 140,
+          "denominator": 168,
+          "saturated": false
+        }
+      }
+    },
+    "gemini-3.6-flash||domain_guided": {
+      "system": "gemini-3.6-flash",
+      "condition": "domain_guided",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "functional_pass1": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "unconditional_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 210,
+          "denominator": 210,
+          "saturated": true
+        },
+        "safety_given_functional": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 126,
+          "denominator": 126,
+          "saturated": true
+        },
+        "robust_success": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "hidden_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 126,
+          "denominator": 126,
+          "saturated": true
+        },
+        "public_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 84,
+          "denominator": 84,
+          "saturated": true
+        }
+      }
+    },
+    "gemini-3.6-flash||retrieval": {
+      "system": "gemini-3.6-flash",
+      "condition": "retrieval",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "functional_pass1": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "unconditional_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 210,
+          "denominator": 210,
+          "saturated": true
+        },
+        "safety_given_functional": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 126,
+          "denominator": 126,
+          "saturated": true
+        },
+        "robust_success": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "hidden_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 126,
+          "denominator": 126,
+          "saturated": true
+        },
+        "public_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 84,
+          "denominator": 84,
+          "saturated": true
+        }
+      }
+    },
+    "gemini-3.6-flash||zero_shot": {
+      "system": "gemini-3.6-flash",
+      "condition": "zero_shot",
+      "n_families": 7,
+      "n_candidates": 21,
+      "n_records": 210,
+      "metrics": {
+        "compile_rate": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "functional_pass1": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 21,
+          "denominator": 21,
+          "saturated": true
+        },
+        "unconditional_safety": {
+          "point": 0.9666666666666667,
+          "ci_low": 0.9428571428571428,
+          "ci_high": 0.9904761904761905,
+          "numerator": 203,
+          "denominator": 210,
+          "saturated": false
+        },
+        "safety_given_functional": {
+          "point": 0.9444444444444444,
+          "ci_low": 0.9047619047619048,
+          "ci_high": 0.9841269841269841,
+          "numerator": 119,
+          "denominator": 126,
+          "saturated": false
+        },
+        "robust_success": {
+          "point": 0.6666666666666666,
+          "ci_low": 0.42857142857142855,
+          "ci_high": 0.9047619047619048,
+          "numerator": 14,
+          "denominator": 21,
+          "saturated": false
+        },
+        "hidden_safety": {
+          "point": 0.9444444444444444,
+          "ci_low": 0.9047619047619048,
+          "ci_high": 0.9841269841269841,
+          "numerator": 119,
+          "denominator": 126,
+          "saturated": false
+        },
+        "public_safety": {
+          "point": 1.0,
+          "ci_low": 1.0,
+          "ci_high": 1.0,
+          "numerator": 84,
+          "denominator": 84,
+          "saturated": true
+        }
+      }
+    }
+  },
+  "rq3_zero_shot_to_domain_guided": {
+    "hidden_safety": {
+      "gemini-3-flash-preview": {
+        "delta": -0.031746031746031744,
+        "ci_low": -0.25396825396825395,
+        "ci_high": 0.1428571428571429,
+        "from": "zero_shot",
+        "to": "domain_guided",
+        "metric": "hidden_safety"
+      },
+      "gemini-3.1-pro-preview": {
+        "delta": 0.1785714285714286,
+        "ci_low": 0.0793650793650793,
+        "ci_high": 0.3015873015873016,
+        "from": "zero_shot",
+        "to": "domain_guided",
+        "metric": "hidden_safety"
+      },
+      "gemini-3.6-flash": {
+        "delta": 0.05555555555555558,
+        "ci_low": 0.015873015873015928,
+        "ci_high": 0.09523809523809523,
+        "from": "zero_shot",
+        "to": "domain_guided",
+        "metric": "hidden_safety"
+      }
+    },
+    "robust_success": {
+      "gemini-3-flash-preview": {
+        "delta": 0.04761904761904756,
+        "ci_low": -0.19047619047619047,
+        "ci_high": 0.2857142857142857,
+        "from": "zero_shot",
+        "to": "domain_guided",
+        "metric": "robust_success"
+      },
+      "gemini-3.1-pro-preview": {
+        "delta": 0.3571428571428571,
+        "ci_low": 0.16666666666666663,
+        "ci_high": 0.5476190476190477,
+        "from": "zero_shot",
+        "to": "domain_guided",
+        "metric": "robust_success"
+      },
+      "gemini-3.6-flash": {
+        "delta": 0.33333333333333337,
+        "ci_low": 0.09523809523809523,
+        "ci_high": 0.5714285714285714,
+        "from": "zero_shot",
+        "to": "domain_guided",
+        "metric": "robust_success"
+      }
+    }
+  },
+  "rq_inversion_domain_guided_minus_retrieval": {
+    "gemini-3-flash-preview": {
+      "delta": -0.08730158730158721,
+      "ci_low": -0.2857142857142857,
+      "ci_high": 0.031746031746031744,
+      "from": "retrieval",
+      "to": "domain_guided",
+      "metric": "hidden_safety"
+    },
+    "gemini-3.1-pro-preview": {
+      "delta": 0.011904761904761973,
+      "ci_low": -0.0357142857142857,
+      "ci_high": 0.06349206349206349,
+      "from": "retrieval",
+      "to": "domain_guided",
+      "metric": "hidden_safety"
+    },
+    "gemini-3.6-flash": {
+      "delta": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "from": "retrieval",
+      "to": "domain_guided",
+      "metric": "hidden_safety"
+    }
+  },
+  "rq4_public_minus_hidden": {
+    "claude-opus-4-6[1m]||agentic": {
+      "gap": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0
+    },
+    "gemini-3-flash-preview||domain_guided": {
+      "gap": 0.007936507936507908,
+      "ci_low": 0.0,
+      "ci_high": 0.023809523809523836
+    },
+    "gemini-3-flash-preview||retrieval": {
+      "gap": -0.007936507936507908,
+      "ci_low": -0.015873015873015928,
+      "ci_high": 0.0
+    },
+    "gemini-3-flash-preview||zero_shot": {
+      "gap": 0.011904761904761862,
+      "ci_low": 0.0,
+      "ci_high": 0.02777777777777779
+    },
+    "gemini-3.1-pro-preview||domain_guided": {
+      "gap": 0.015873015873015817,
+      "ci_low": 0.003968253968253954,
+      "ci_high": 0.031746031746031744
+    },
+    "gemini-3.1-pro-preview||retrieval": {
+      "gap": 0.02777777777777779,
+      "ci_low": 0.007936507936507908,
+      "ci_high": 0.051587301587301515
+    },
+    "gemini-3.1-pro-preview||zero_shot": {
+      "gap": 0.051587301587301626,
+      "ci_low": 0.01984126984126977,
+      "ci_high": 0.08730158730158732
+    },
+    "gemini-3.6-flash||domain_guided": {
+      "gap": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0
+    },
+    "gemini-3.6-flash||retrieval": {
+      "gap": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0
+    },
+    "gemini-3.6-flash||zero_shot": {
+      "gap": 0.05555555555555558,
+      "ci_low": 0.015873015873015928,
+      "ci_high": 0.09523809523809523
+    }
+  },
+  "failure_composition": {
+    "gemini-3-flash-preview||domain_guided": {
+      "no_lost_effect": 1,
+      "compile_error": 20
+    },
+    "gemini-3-flash-preview||retrieval": {
+      "payload_consistency": 4
+    },
+    "gemini-3-flash-preview||zero_shot": {
+      "compile_error": 10,
+      "no_lost_effect": 2,
+      "payload_consistency": 2
+    },
+    "gemini-3.1-pro-preview||domain_guided": {
+      "no_lost_effect": 4,
+      "compile_error": 10
+    },
+    "gemini-3.1-pro-preview||retrieval": {
+      "no_lost_effect": 7,
+      "compile_error": 10
+    },
+    "gemini-3.1-pro-preview||zero_shot": {
+      "no_lost_effect": 13,
+      "compile_error": 70
+    },
+    "gemini-3.6-flash||zero_shot": {
+      "no_lost_effect": 7
+    },
+    "claude-opus-4-6[1m]||agentic": {},
+    "gemini-3.6-flash||retrieval": {},
+    "gemini-3.6-flash||domain_guided": {}
+  },
+  "survival": {
+    "claude-opus-4-6[1m]||agentic": {
+      "m": 126,
+      "n": 126,
+      "saturated": true,
+      "curve": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0
+      }
+    },
+    "gemini-3-flash-preview||domain_guided": {
+      "m": 113,
+      "n": 126,
+      "saturated": false,
+      "curve": {
+        "1": 0.8968253968253969,
+        "2": 0.8035555555555556,
+        "3": 0.7193118279569892,
+        "4": 0.6432870006119416,
+        "5": 0.5747400251368986,
+        "6": 0.5129910968164054,
+        "7": 0.4574170613279615,
+        "8": 0.4074471302585203
+      }
+    },
+    "gemini-3-flash-preview||retrieval": {
+      "m": 124,
+      "n": 126,
+      "saturated": false,
+      "curve": {
+        "1": 0.9841269841269841,
+        "2": 0.9683809523809523,
+        "3": 0.9527619047619048,
+        "4": 0.9372698412698413,
+        "5": 0.9219047619047619,
+        "6": 0.9066666666666666,
+        "7": 0.8915555555555555,
+        "8": 0.8765714285714286
+      }
+    },
+    "gemini-3-flash-preview||zero_shot": {
+      "m": 117,
+      "n": 126,
+      "saturated": false,
+      "curve": {
+        "1": 0.9285714285714286,
+        "2": 0.8617142857142858,
+        "3": 0.7991705069124424,
+        "4": 0.7406946161627515,
+        "5": 0.6860532100523846,
+        "6": 0.6350244588914634,
+        "7": 0.5873976244746036,
+        "8": 0.5429725940521546
+      }
+    },
+    "gemini-3.1-pro-preview||domain_guided": {
+      "m": 242,
+      "n": 252,
+      "saturated": false,
+      "curve": {
+        "1": 0.9603174603174603,
+        "2": 0.9220578005438563,
+        "3": 0.885175488522102,
+        "4": 0.8496262721155919,
+        "5": 0.8153671482399633,
+        "6": 0.7823563325217461,
+        "7": 0.7505532295737076,
+        "8": 0.7199184038768216
+      }
+    },
+    "gemini-3.1-pro-preview||retrieval": {
+      "m": 239,
+      "n": 252,
+      "saturated": false,
+      "curve": {
+        "1": 0.9484126984126984,
+        "2": 0.8992917220008854,
+        "3": 0.8525285524568393,
+        "4": 0.8080190296378076,
+        "5": 0.7656631934067935,
+        "6": 0.7253651305959096,
+        "7": 0.6870328269465322,
+        "8": 0.6505780238840632
+      }
+    },
+    "gemini-3.1-pro-preview||zero_shot": {
+      "m": 197,
+      "n": 252,
+      "saturated": false,
+      "curve": {
+        "1": 0.7817460317460317,
+        "2": 0.6104471004869412,
+        "3": 0.4761487383798141,
+        "4": 0.370975322271823,
+        "5": 0.2887025693486365,
+        "6": 0.22441657212525587,
+        "7": 0.1742421352679832,
+        "8": 0.1351265538812931
+      }
+    },
+    "gemini-3.6-flash||domain_guided": {
+      "m": 126,
+      "n": 126,
+      "saturated": true,
+      "curve": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0
+      }
+    },
+    "gemini-3.6-flash||retrieval": {
+      "m": 126,
+      "n": 126,
+      "saturated": true,
+      "curve": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0
+      }
+    },
+    "gemini-3.6-flash||zero_shot": {
+      "m": 119,
+      "n": 126,
+      "saturated": false,
+      "curve": {
+        "1": 0.9444444444444444,
+        "2": 0.8915555555555555,
+        "3": 0.8412258064516129,
+        "4": 0.7933511670600577,
+        "5": 0.7478310181303822,
+        "6": 0.7045680666682941,
+        "7": 0.6634682627793103,
+        "8": 0.624440717909939
+      }
+    }
+  },
+  "totals": {
+    "tokens": 8329916,
+    "cost_usd": 6.1631
+  },
+  "figures": [
+    "model_survival.png",
+    "model_rq3_delta.png",
+    "model_failure_composition.png",
+    "model_public_vs_hidden.png"
+  ]
+}

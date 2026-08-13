@@ -39,9 +39,29 @@ def mutant_type(name):
     return name
 
 
+_DIGIT_WORDS = {
+    "0": "zero", "1": "one", "2": "two", "3": "three", "4": "four",
+    "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine",
+}
+
+
 def tex_name(s):
-    """A LaTeX-safe control-sequence suffix (letters only)."""
-    return s.replace(" ", "").replace("-", "").replace("_", "")
+    """A LaTeX-safe control-sequence suffix: letters only, digits spelled out.
+
+    Digits cannot be dropped or kept. A TeX control sequence is a run of
+    catcode-11 letters, so `\\failcompm1unstableidentity` does not define a macro
+    of that name — it defines `\\failcompm` with `1unstableidentity` as delimiter
+    text, and the five mutant lines silently collided onto that one macro, each
+    overwriting the last. Mapping 1 -> "one" keeps every name a real, distinct
+    control sequence (`\\failcompmoneunstableidentity`).
+    """
+    out = []
+    for ch in str(s):
+        if ch.isalpha():
+            out.append(ch)
+        elif ch in _DIGIT_WORDS:
+            out.append(_DIGIT_WORDS[ch])
+    return "".join(out)
 
 
 def choose(n, k):
