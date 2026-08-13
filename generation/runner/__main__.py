@@ -26,6 +26,8 @@ from .agent_cli import (
     agent_unavailable,
     audit_session,
     build_agent,
+    enforce_config_isolation,
+    inspect_inherited_config,
     refuse_base_condition,
 )
 from .evaluate import Workspace, extract_go_source
@@ -111,6 +113,15 @@ def parse_args(argv=None):
         type=float,
         default=None,
         help="spend cap in USD for one CLI-agent session (passed to --max-budget-usd)",
+    )
+    p.add_argument(
+        "--show-agent-config",
+        action="store_true",
+        help=(
+            "print exactly what the CLI would inherit beyond the scaffold "
+            "(CLAUDE.md, session memory, user settings) with hashes and a "
+            "benchmark-relevance scan, then exit"
+        ),
     )
     p.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     p.add_argument("--effort", default=DEFAULT_EFFORT, choices=["low", "medium", "high", "xhigh", "max"])
@@ -357,6 +368,10 @@ def generate_with_agent(agent, fam, condition, system, user, artifact_dir):
     try:
         scaffold.build()
         inventory = scaffold.inventory()
+        # Checked per scaffold, not once per run: the memory directory is scoped
+        # to the working directory, so it is a different directory every sample.
+        config = inspect_inherited_config(scaffold)
+        enforce_config_isolation(config)
         run = agent.run(scaffold, system, user)
         source = scaffold.read_candidate()
         audit = audit_session(scaffold, run)
@@ -381,13 +396,14 @@ def generate_with_agent(agent, fam, condition, system, user, artifact_dir):
                     "tokens": run.tokens,
                     "cost_usd": run.cost_usd,
                     "scaffold": inventory,
+                    "config_isolation": config,
                     "cli_result": run.raw,
                 },
                 fh,
                 indent=2,
             )
         with open(os.path.join(artifact_dir, "agent_audit.json"), "w", encoding="utf-8") as fh:
-            json.dump(audit, fh, indent=2)
+            json.dump({**audit, "config_isolation": config}, fh, indent=2)
         # The transcript is the evidence for the isolation claim, so it is
         # archived next to the result rather than left in ~/.claude to be
         # rotated away.
@@ -402,12 +418,12 @@ def generate_with_agent(agent, fam, condition, system, user, artifact_dir):
         snapshot = os.path.join(artifact_dir, "scaffold")
         shutil.rmtree(snapshot, ignore_errors=True)
         shutil.copytree(scaffold.dir, snapshot, ignore=shutil.ignore_patterns("bin"))
-        return source, run, audit, inventory
+        return source, run, audit, inventory, config
     finally:
         scaffold.cleanup()
 
 
-def agent_metadata(agent, run, audit, inventory):
+def agent_metadata(agent, run, audit, inventory, config):
     """The CLI-agent fields attached to every record of one agent session.
 
     Two token counts, because they answer different questions. `scaffold_tokens`
@@ -425,6 +441,10 @@ def agent_metadata(agent, run, audit, inventory):
         "injected_context_tokens": (
             run.tokens["input"] + run.tokens["cache_read"] + run.tokens["cache_creation"]
         ),
+        # Disclosable in the paper: exactly what the CLI could inject beyond the
+        # scaffold, and the hash of every inherited file, so a reader can check
+        # the agent was not quietly primed by the operator's own notes.
+        "config_isolation": config,
         "agent": {
             "provider": agent.provider,
             "session_id": run.session_id,
@@ -438,8 +458,36 @@ def agent_metadata(agent, run, audit, inventory):
     }
 
 
+def show_agent_config(args):
+    """Print the inherited-context disclosure and exit.
+
+    Builds a real scaffold so the memory directory inspected is the one an actual
+    run would use — session memory is scoped to the working directory, so
+    inspecting any other path would answer a different question.
+    """
+    fam = FAMILIES[_resolve(args.families, ALL_FAMILIES, "family")[0]]
+    scaffold = AgentScaffold(fam)
+    try:
+        scaffold.build()
+        state = inspect_inherited_config(scaffold)
+        print(json.dumps(state, indent=2))
+        print()
+        print(f"scaffold cwd     : {scaffold.dir}")
+        print(f"repository root  : {ROOT}")
+        print(f"scaffold in repo : {os.path.realpath(scaffold.dir).startswith(os.path.realpath(ROOT) + os.sep)}")
+        if state["clean"]:
+            print("\nVERDICT: no inherited file mentions this benchmark. Agentic runs may proceed.")
+        else:
+            print("\nVERDICT: CONTAMINATED — agentic runs will refuse to start.")
+    finally:
+        scaffold.cleanup()
+    return 0
+
+
 def main(argv=None):
     args = parse_args(argv)
+    if args.show_agent_config:
+        return show_agent_config(args)
     preflight(args)
 
     families = [FAMILIES[f] for f in _resolve(args.families, ALL_FAMILIES, "family")]
@@ -495,6 +543,8 @@ def main(argv=None):
               f"budget={args.agent_timeout}s"
               + (f"/${args.agent_max_usd}" if args.agent_max_usd else "")
               + "  scoring: sealed scaffold (public) -> full harness (public + hidden)")
+        print("  config isolation: --setting-sources '' (no user/project/local settings); "
+              "memory is cwd-scoped to a fresh temp dir; inherited files scanned per sample")
 
     ws = Workspace()
     records, failures = [], []
@@ -527,7 +577,8 @@ def main(argv=None):
                     agent_run = agent_audit = None
                     try:
                         if is_agent:
-                            source, agent_run, agent_audit, inventory = generate_with_agent(
+                            (source, agent_run, agent_audit, inventory,
+                             agent_config) = generate_with_agent(
                                 agent, fam, condition, system, user, artifact_dir
                             )
                             totals = dict(agent_run.tokens, cost_usd=agent_run.cost_usd)
@@ -561,7 +612,11 @@ def main(argv=None):
                         "generated_at": datetime.now(timezone.utc).isoformat(),
                     }
                     if agent_run is not None:
-                        meta.update(agent_metadata(agent, agent_run, agent_audit, inventory))
+                        meta.update(
+                            agent_metadata(
+                                agent, agent_run, agent_audit, inventory, agent_config
+                            )
+                        )
 
                     if outcome.compile_status == "error":
                         with open(os.path.join(artifact_dir, "compile_error.txt"), "w",
@@ -591,6 +646,11 @@ def main(argv=None):
                         extra = f", {agent_run.num_turns} turns"
                         if agent_audit["denied_tool_attempts"]:
                             extra += f", {agent_audit['denied_tool_attempts']} denied"
+                        ra = agent_audit["read_audit"]
+                        extra += (
+                            f", out-of-scaffold path refs: {ra['out_of_scaffold_path_refs']}"
+                            f", t4-source accesses: {len(ra['t4_source_access_completed'])}"
+                        )
                         if not agent_audit["clean"]:
                             extra += ", CONTAMINATED: " + "; ".join(agent_audit["contamination"])
                     print(f"  {label}  {verdict}  "

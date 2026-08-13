@@ -28,8 +28,10 @@ What the runner controls, and what it does not:
 """
 
 import glob
+import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import time
@@ -59,6 +61,177 @@ UNIMPLEMENTED = {
 
 class AgentContaminated(ModelError):
     """The agent reached material the scaffold was supposed to withhold."""
+
+
+# ---------------------------------------------------------------------------
+# Config isolation
+# ---------------------------------------------------------------------------
+#
+# `claude -p` loads more than the prompt: user settings, a global CLAUDE.md, and
+# cwd-scoped memory. This benchmark was built in Claude Code on this machine, so
+# that inherited context is a live contamination channel — an agent that has read
+# notes about reserve-then-effect or the six invariants is recalling, not
+# solving.
+#
+# Full relocation via CLAUDE_CONFIG_DIR was tested and **breaks subscription
+# auth** ("Not logged in"), and `--bare` requires an API key. So isolation is
+# achieved three ways instead, and the third is what makes it safe rather than
+# lucky:
+#
+#   1. `--setting-sources ''` — user/project/local settings are not loaded at
+#      all. This matters concretely: the operator's settings on this machine
+#      allow `Bash(python3 -c ' *)`, `Bash(curl ...)` and
+#      `WebFetch(domain:github.com)`, any of which would defeat the Go-only
+#      allowlist and reach a public copy of this repository.
+#   2. The scaffold cwd is a fresh mkdtemp path, and Claude Code scopes memory by
+#      cwd — so the session's memory directory is empty *by construction*, not by
+#      configuration.
+#   3. Everything still reachable is inspected, hashed, and scanned before the
+#      run, and a benchmark-relevant hit **refuses the run**.
+
+# Terms that would indicate the inherited context knows about this benchmark.
+# Deliberately broad: a false positive stops a run and asks a human to look,
+# which is the cheap direction to be wrong in.
+BENCHMARK_TERMS = (
+    "t4bench",
+    "t4-benchmark",
+    "retry-saf",
+    "idempoten",
+    "reserve-then-effect",
+    "reserve_then_effect",
+    "at_most_one",
+    "no_lost_effect",
+    "no_false_dedup",
+    "payload_consistency",
+    "hidden schedule",
+    "fault schedule",
+    "fault injection",
+    "seeded-bug",
+    "mutant",
+    "payment rail",
+    "capture-t1",
+)
+
+
+def _digest(path: str) -> dict:
+    with open(path, "rb") as fh:
+        raw = fh.read()
+    return {"path": path, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def _scan_terms(text: str) -> list:
+    low = text.lower()
+    return [t for t in BENCHMARK_TERMS if t in low]
+
+
+def _memory_dirs(scaffold) -> list:
+    """Claude Code's cwd-scoped memory directories for this scaffold.
+
+    Matched by the scaffold's unique basename rather than by reimplementing the
+    path-munging Claude Code uses, which would be one upstream change away from
+    silently matching nothing and reporting a clean bill of health.
+    """
+    home = os.path.expanduser("~/.claude/projects")
+    leaf = os.path.basename(scaffold.dir)
+    return sorted(glob.glob(os.path.join(home, f"*{leaf}", "memory")))
+
+
+def inspect_inherited_config(scaffold) -> dict:
+    """Everything `claude -p` could inject beyond the scaffold, hashed and scanned.
+
+    Recorded into every agentic result so the paper can disclose exactly what the
+    agent's context contained beyond the task.
+    """
+    state = {
+        "setting_sources": "",
+        "user_settings_loaded": False,
+        "config_dir_relocated": False,
+        "config_dir_note": (
+            "CLAUDE_CONFIG_DIR relocation was tested and breaks subscription auth "
+            "('Not logged in'); --bare requires an API key. Isolation is achieved "
+            "with --setting-sources '' plus a fresh-temp-cwd (memory is cwd-scoped) "
+            "and enforced by the scan below."
+        ),
+        "inherited": [],
+        "benchmark_relevant_hits": [],
+    }
+
+    # Disclosed but NOT loaded, so a reviewer can see what was excluded.
+    user_settings = os.path.expanduser("~/.claude/settings.json")
+    if os.path.exists(user_settings):
+        info = _digest(user_settings)
+        info["loaded"] = False
+        info["kind"] = "user settings (excluded by --setting-sources '')"
+        state["inherited"].append(info)
+
+    # A global CLAUDE.md *would* still load: --setting-sources does not govern
+    # it, and the config dir cannot be moved without losing auth. So it is
+    # hashed and scanned, and a benchmark-relevant hit aborts the run.
+    candidates = [os.path.expanduser("~/.claude/CLAUDE.md")]
+    if os.environ.get("CLAUDE_CONFIG_DIR"):
+        candidates.append(os.path.join(os.environ["CLAUDE_CONFIG_DIR"], "CLAUDE.md"))
+    # Any CLAUDE.md in the scaffold or an ancestor of it.
+    node = os.path.realpath(scaffold.dir)
+    while True:
+        candidates.append(os.path.join(node, "CLAUDE.md"))
+        parent = os.path.dirname(node)
+        if parent == node:
+            break
+        node = parent
+
+    for path in candidates:
+        if not os.path.exists(path):
+            continue
+        info = _digest(path)
+        info["loaded"] = True
+        info["kind"] = "CLAUDE.md"
+        try:
+            with open(path, encoding="utf-8", errors="replace") as fh:
+                hits = _scan_terms(fh.read())
+        except OSError:
+            hits = []
+        info["benchmark_terms"] = hits
+        state["inherited"].append(info)
+        state["benchmark_relevant_hits"].extend(f"{path}: {t}" for t in hits)
+
+    mem_files = []
+    for mdir in _memory_dirs(scaffold):
+        for name in sorted(os.listdir(mdir)) if os.path.isdir(mdir) else []:
+            path = os.path.join(mdir, name)
+            if not os.path.isfile(path):
+                continue
+            info = _digest(path)
+            info["loaded"] = True
+            info["kind"] = "session memory"
+            try:
+                with open(path, encoding="utf-8", errors="replace") as fh:
+                    hits = _scan_terms(fh.read())
+            except OSError:
+                hits = []
+            info["benchmark_terms"] = hits
+            mem_files.append(info)
+            state["benchmark_relevant_hits"].extend(f"{path}: {t}" for t in hits)
+    state["inherited"].extend(mem_files)
+    state["session_memory_files"] = len(mem_files)
+    state["clean"] = not state["benchmark_relevant_hits"]
+    return state
+
+
+def enforce_config_isolation(state: dict) -> None:
+    """Refuse to run if the inherited context knows anything about this benchmark.
+
+    Contamination here is unrecoverable after the fact: once the agent has read
+    a note about reserve-then-effect, no audit can subtract it from the result.
+    The only safe move is not to run.
+    """
+    if state["benchmark_relevant_hits"]:
+        raise AgentContaminated(
+            "the CLI's inherited context mentions this benchmark, so an agentic "
+            "run from it would measure recall rather than reasoning:\n  - "
+            + "\n  - ".join(state["benchmark_relevant_hits"])
+            + "\nRemove or relocate the offending file before running the agentic "
+            "condition."
+        )
 
 
 def refuse_base_condition(provider: str, conditions) -> None:
@@ -195,6 +368,15 @@ class ClaudeCLIAgent(CLIAgent):
             "--settings",
             settings,
             "--strict-mcp-config",
+            # Load NO user/project/local settings. Verified necessary, not
+            # precautionary: the operator's settings on this machine allow
+            # `Bash(python3 -c ' *)`, several `Bash(curl ...)` rules, and
+            # `WebFetch(domain:github.com)` — and this repository is public, so
+            # any of those is a route to the hidden schedules that the Go-only
+            # allowlist would not stop. The deny-list passed via --settings is an
+            # explicit file and still applies.
+            "--setting-sources",
+            "",
         ]
         if self.model:
             cmd += ["--model", self.model]
@@ -330,6 +512,126 @@ def _find_transcript(session_id: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Filesystem confinement
+# ---------------------------------------------------------------------------
+
+# Tools that name a filesystem path, and the input keys that carry it.
+_PATH_TOOLS = {
+    "Read": ("file_path",),
+    "Edit": ("file_path",),
+    "Write": ("file_path",),
+    "MultiEdit": ("file_path",),
+    "NotebookEdit": ("notebook_path",),
+    "Glob": ("path",),
+    "Grep": ("path",),
+}
+
+# Absolute paths and ../ traversals appearing anywhere in a Bash command line.
+_PATHISH = re.compile(r"""(?:^|[\s'"=(:])((?:/|\.\./)[^\s'";|&)]+)""")
+
+# Basenames that identify benchmark source. A read of one of these from outside
+# the scaffold is the failure this audit exists to catch: `cases.go` holds the
+# hidden schedules, `oracle.go` the invariant checker, `<family>.go` the correct
+# reference and the mutants.
+T4_SOURCE_NAMES = (
+    "cases.go",
+    "oracle.go",
+    "harness.go",
+    "shrink.go",
+    "result.go",
+    "run.go",
+    "pilot_results.json",
+    "model_results.json",
+)
+
+_DENIED_MARKERS = ("permission", "denied", "not allowed", "haven't granted", "has not been granted")
+
+
+def _transcript_tool_calls(path: str):
+    """(tool, input, outcome) for every tool call in a session transcript.
+
+    `outcome` is "denied" when the paired tool_result reports a permission
+    failure, otherwise "completed" — the distinction between an agent that tried
+    to leave the scaffold and one that succeeded.
+    """
+    calls, results = [], {}
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            lines = fh.readlines()
+    except OSError:
+        return []
+    for line in lines:
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        message = entry.get("message") or {}
+        for chunk in message.get("content") or []:
+            if not isinstance(chunk, dict):
+                continue
+            if chunk.get("type") == "tool_use":
+                calls.append((chunk.get("id"), chunk.get("name", ""), chunk.get("input") or {}))
+            elif chunk.get("type") == "tool_result":
+                body = json.dumps(chunk.get("content"))
+                results[chunk.get("tool_use_id")] = (
+                    "denied"
+                    if (chunk.get("is_error") or any(m in body.lower() for m in _DENIED_MARKERS))
+                    else "completed"
+                )
+    return [(name, inp, results.get(cid, "unknown")) for cid, name, inp in calls]
+
+
+def _candidate_paths(tool: str, inp: dict) -> list:
+    out = []
+    for key in _PATH_TOOLS.get(tool, ()):
+        value = inp.get(key)
+        if isinstance(value, str) and value:
+            out.append(value)
+    if tool == "Bash":
+        out.extend(_PATHISH.findall(str(inp.get("command", ""))))
+    return out
+
+
+def audit_reads(scaffold, transcript_path: str, root: str) -> dict:
+    """Every filesystem path the agent named, classified by where it points.
+
+    Modification alone is not the risk — reading is. An agent that read
+    `cases.go` has the scoring set whether or not it wrote a single byte, so
+    this walks the transcript for paths rather than diffing the disk.
+    """
+    scaffold_real = os.path.realpath(scaffold.dir)
+    root_real = os.path.realpath(root)
+    outside, t4_reads = [], []
+
+    for tool, inp, outcome in _transcript_tool_calls(transcript_path):
+        for raw in _candidate_paths(tool, inp):
+            resolved = os.path.realpath(
+                raw if os.path.isabs(raw) else os.path.join(scaffold_real, raw)
+            )
+            if resolved == scaffold_real or resolved.startswith(scaffold_real + os.sep):
+                continue
+            record = {"tool": tool, "path": raw, "resolved": resolved, "outcome": outcome}
+            outside.append(record)
+            in_repo = resolved == root_real or resolved.startswith(root_real + os.sep)
+            named_source = os.path.basename(resolved) in T4_SOURCE_NAMES
+            if in_repo or named_source or "t4-benchmark" in resolved or "t4eval-" in resolved:
+                t4_reads.append(record)
+
+    succeeded = [r for r in t4_reads if r["outcome"] == "completed"]
+    return {
+        "out_of_scaffold_paths": outside,
+        "t4_source_paths": t4_reads,
+        # "completed" means the tool call was not denied — which includes calls
+        # that only resolve or stat a path (`realpath`) and return no file
+        # content. Reported conservatively either way; whether content actually
+        # crossed the barrier is answered by the withheld-string scan of the same
+        # transcript, which would surface a hidden schedule id verbatim.
+        "t4_source_access_completed": succeeded,
+        "clean": not succeeded,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Leak audit
 # ---------------------------------------------------------------------------
 
@@ -337,12 +639,15 @@ def audit_session(scaffold, run: AgentRun) -> dict:
     """Did the agent stay inside the scaffold?
 
     The scaffold makes the withheld material unreachable by construction; this
-    checks the construction actually held. Three independent signals:
+    checks the construction actually held. Four independent signals:
 
       1. the session transcript, searched for the withheld strings — the hidden
          schedule ids, the oracle, the reference, and the paths to both;
-      2. `permission_denials`, which records attempts the deny-list stopped;
-      3. the scaffold's protected files, re-hashed — an agent that edited its
+      2. every filesystem path the agent named, resolved and classified — a
+         *read* of `cases.go` is the failure, whether or not anything was
+         written, so disk state alone would not catch it;
+      3. `permission_denials`, which records attempts the deny-list stopped;
+      4. the scaffold's protected files, re-hashed — an agent that edited its
          own test was not measuring the contract.
 
     A finding never silently discards the result. It is recorded with it, so a
@@ -380,6 +685,13 @@ def audit_session(scaffold, run: AgentRun) -> dict:
     if modified:
         findings.append("protected scaffold files changed: " + ", ".join(modified))
 
+    reads = audit_reads(scaffold, run.transcript_path, ROOT)
+    for hit in reads["t4_source_access_completed"]:
+        findings.append(
+            "benchmark source outside the scaffold was accessed without being "
+            f"denied: {hit['tool']} {hit['resolved']}"
+        )
+
     # Denials are reported separately from contamination, and deliberately do
     # not set `clean`. They mean the sandbox held, not that the run is tainted —
     # and conflating the two would either cry wolf on an incidental `ls` or,
@@ -395,6 +707,13 @@ def audit_session(scaffold, run: AgentRun) -> dict:
         "transcript": os.path.basename(run.transcript_path) if run.transcript_path else "",
         "scaffold_contents": scaffold.audit_contents(),
         "protected_files_modified": modified,
+        "read_audit": {
+            "out_of_scaffold_path_refs": len(reads["out_of_scaffold_paths"]),
+            "t4_source_path_refs": len(reads["t4_source_paths"]),
+            "t4_source_access_completed": reads["t4_source_access_completed"],
+            "attempts": reads["t4_source_paths"],
+            "clean": reads["clean"],
+        },
         "denied_tool_attempts": len(denied),
         "denied_sample": denied[:10],
         "findings": findings,

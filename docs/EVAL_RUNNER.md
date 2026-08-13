@@ -87,6 +87,7 @@ Run from the repository root so `generation.runner` resolves.
 | `--agentic-iterations N` | `3` | Max revise cycles in the agentic condition (API providers). |
 | `--agent-timeout N` | `1800` | Wall-clock budget for one CLI-agent session, in seconds. |
 | `--agent-max-usd N` | *unset* | Spend cap for one CLI-agent session. |
+| `--show-agent-config` | off | Print what the CLI would inherit beyond the scaffold (hashes + relevance scan) and exit. |
 | `--max-tokens` / `--effort` | `32000` / `high` | Generation budget and reasoning depth. |
 | `--price-in` / `--price-out` | list price | USD per 1M tokens, for `cost_usd`. |
 | `--out PATH` | `results/model_results.json` | Records file. |
@@ -138,6 +139,13 @@ results/
         ├── scaffold/               # claude-cli only: everything the agent could read
         └── meta.json
 ```
+
+Each CLI-agent session also leaves its own directory under
+`~/.claude/projects/…t4scaffold-<family>-<suffix>/` (one per sample, holding the
+original session JSONL). The transcript is copied into `results/raw/` as part of
+the run, so those are redundant afterwards; they are left in place rather than
+deleted, because removing session history from a user's config directory is not
+the runner's call.
 
 Both paths are gitignored: unlike the pilot artifacts, model output is
 stochastic, unbounded, and must not masquerade as a measured result. `git add -f`
@@ -193,8 +201,15 @@ metadata in place of the sampling metadata:
     "scaffold": { "files": 7, "bytes": 16141, "est_tokens": 4035 },
     "leak_audit": { "clean": true, "transcript_checked": true,
                     "contamination": [], "protected_files_modified": [],
-                    "denied_tool_attempts": 0 }
-  }
+                    "denied_tool_attempts": 0,
+                    "read_audit": { "clean": true, "out_of_scaffold_path_refs": 0,
+                                    "t4_source_access_completed": [] } }
+  },
+  "config_isolation": { "clean": true, "setting_sources": "",
+                        "user_settings_loaded": false, "session_memory_files": 0,
+                        "inherited": [ { "path": "~/.claude/settings.json",
+                                         "sha256": "5454506902c96299…",
+                                         "loaded": false } ] }
 }
 ```
 
@@ -421,6 +436,81 @@ train the reader to ignore the flag that does matter.
 > and hence `denied_tool_attempts` in every record: if the loop is ever broken
 > again, the number will say so.
 
+### Config isolation
+
+`claude -p` loads more than the prompt: user settings, a global `CLAUDE.md`, and
+session memory. This benchmark was **built in Claude Code on the same machine**,
+so that inherited context is a live contamination channel — an agent primed with
+notes about reserve-then-effect or the six invariants is recalling, not solving.
+
+Inspect exactly what would be inherited:
+
+```sh
+python -m generation.runner --show-agent-config --families capture
+```
+
+It builds a real scaffold (session memory is scoped to the working directory, so
+inspecting any other path answers a different question), hashes every file that
+could be injected, scans each for benchmark-relevant terms, and prints a verdict.
+
+Full relocation via `CLAUDE_CONFIG_DIR` was tested and **breaks subscription
+auth** — the CLI returns `Not logged in`. `--bare` suppresses everything but
+requires `ANTHROPIC_API_KEY`, which is what this backend exists to avoid needing.
+So isolation is achieved three ways, and the third is what makes it safe rather
+than lucky:
+
+1. **`--setting-sources ''`** — no user, project, or local settings are loaded.
+   This is necessary, not precautionary. The settings on the machine this was
+   developed on allow `Bash(python3 -c ' *)`, several `Bash(curl …)` rules, and
+   `WebFetch(domain:github.com)`; this repository is public, so any of those is a
+   route to the hidden schedules that the Go-only allowlist would not stop.
+   The explicit deny-list passed via `--settings` is a separate file and still
+   applies.
+2. **The scaffold cwd is a fresh `mkdtemp` path**, and Claude Code scopes memory
+   by working directory — so the session's memory directory is empty *by
+   construction*. Verified: scaffold-scoped memory directories contain 0 files,
+   and a completed run's transcript contains none of the operator's memory
+   strings.
+3. **Everything still reachable is hashed and scanned before each sample**, and a
+   benchmark-relevant hit **refuses the run** (`AgentContaminated`). Contamination
+   here cannot be corrected after the fact — once the agent has read a note about
+   reserve-then-effect, no audit can subtract it — so the only safe move is not
+   to run.
+
+The full state, including the SHA-256 of every inherited file, is recorded in
+`config_isolation` on every record, so the paper can disclose it.
+
+### Filesystem confinement
+
+The scaffold and its private workspace are temp directories **outside the
+checkout**, asserted at construction rather than assumed: `scratch_root` is a
+parameter, and a scaffold created inside the repository would place the hidden
+schedules, the oracle and the reference inside the agent's own permission
+boundary.
+
+Modification is not the risk — **reading** is. An agent that read `cases.go` has
+the scoring set whether or not it wrote a byte, so the audit walks the session
+transcript for every filesystem path the agent named (tool inputs plus absolute
+paths and `../` traversals in Bash command lines), resolves each against the
+scaffold, and classifies it:
+
+| Field | Meaning |
+|---|---|
+| `out_of_scaffold_path_refs` | paths naming anything outside the scaffold |
+| `t4_source_path_refs` | of those, ones under the repo or named like benchmark source (`cases.go`, `oracle.go`, …) |
+| `t4_source_access_completed` | the subset **not** denied — the ones that matter |
+
+`completed` means the call was not denied, which includes calls that only resolve
+or stat a path (`realpath`) and return no file content. It is reported
+conservatively either way; whether content actually crossed the barrier is
+answered by the withheld-string scan of the same transcript, which would surface
+a hidden schedule id verbatim.
+
+Validated against a deliberately adversarial session — one told to read
+`tasks/capture/cases.go` by absolute path, by `../` traversal, via `python3 -c`,
+via `cat`, and via GitHub. The audit found all five attempts; the file's contents
+never reached the agent.
+
 ### Budgets
 
 The installed CLI (2.1.87) exposes **no `--max-turns`**, so iteration is bounded
@@ -440,12 +530,17 @@ provider-agnostic and need no changes.
 
 ### Known limitation
 
-The session inherits the operator's user-level Claude Code configuration —
-`CLAUDE.md`, user memory, and settings. The CLI's `--bare` flag suppresses all
-of it but requires `ANTHROPIC_API_KEY`, which is exactly what this backend
-exists to avoid needing. Until an API key is available, treat CLI-agent numbers
-as machine-specific: `config.json` records the CLI version and every flag used,
-so a run stays auditable.
+User/project/local settings are excluded and session memory is empty by
+construction (see [Config isolation](#config-isolation)), but a **global
+`~/.claude/CLAUDE.md` would still be loaded** — `--setting-sources` does not
+govern it, and the config directory cannot be relocated without losing
+subscription auth. It is therefore hashed and scanned before every sample, and a
+benchmark-relevant hit refuses the run. On the machine this was developed on, no
+global `CLAUDE.md` exists at all.
+
+Treat CLI-agent numbers as machine-specific regardless: `config.json` records the
+CLI version and every flag used, and `config_isolation` records the hash of every
+inherited file, so a run stays auditable after the fact.
 
 ## Verifying the setup
 

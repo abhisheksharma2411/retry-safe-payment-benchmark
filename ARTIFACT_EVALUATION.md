@@ -128,9 +128,12 @@ The intended protocol for the v1.0 release and the LLM study is:
    **coding agent with a shell**, which cannot merely be asked, each run is
    confined to a generated scaffold containing the family interface, the
    injected-environment API, and the public schedules — and not `cases.go`,
-   `harness/oracle.go`, the correct reference, or the mutants. Every session
-   transcript is then audited for the withheld strings and archived with the
-   result (`docs/EVAL_RUNNER.md`).
+   `harness/oracle.go`, the correct reference, or the mutants. The scaffold is a
+   temp directory outside the checkout (asserted, not assumed), the agent's
+   inherited configuration is excluded and scanned so a developer's own notes
+   cannot prime it, and every session transcript is audited — for the withheld
+   strings and for reads of benchmark source anywhere on disk — then archived
+   with the result (`docs/EVAL_RUNNER.md`).
 3. **Reveal.** After results are recorded, the hidden schedules and the signed
    manifest are published so anyone can verify that the scoring set matches the
    committed digest and was not altered to fit the results.

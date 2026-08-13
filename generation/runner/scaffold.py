@@ -471,9 +471,24 @@ class AgentScaffold:
     """
 
     def __init__(self, fam: Family, scratch_root=None):
+        from .families import ROOT
+
         self.fam = fam
         self.dir = tempfile.mkdtemp(prefix=f"t4scaffold-{fam.name}-", dir=scratch_root)
         self.workspace = Workspace(scratch_root=scratch_root)
+        # The agent's working directory is its permission boundary, so a scaffold
+        # created inside the checkout would silently place the whole repository —
+        # hidden schedules, oracle, reference, mutants — inside the boundary.
+        # Asserted rather than assumed, because `scratch_root` is a parameter and
+        # a future caller could point it anywhere.
+        for label, path in (("scaffold", self.dir), ("workspace", self.workspace.root)):
+            real, repo = os.path.realpath(path), os.path.realpath(ROOT)
+            if real == repo or real.startswith(repo + os.sep):
+                raise RuntimeError(
+                    f"the agent {label} was created inside the repository checkout "
+                    f"({real}); that would put the hidden schedules, the oracle and "
+                    "the correct reference inside the agent's permission boundary"
+                )
         self.pkg_dir = os.path.join(self.dir, "tasks", fam.name)
         self.candidate_path = os.path.join(self.pkg_dir, "candidate.go")
         self._baseline = {}
