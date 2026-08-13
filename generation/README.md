@@ -62,12 +62,26 @@ Each family exposes a `Factory` type — `func(env harness.Env) Service` — and
    read by the model or its harness during generation — that is the hidden-set
    commitment (see `ARTIFACT_EVALUATION.md`).
 
-## What the full runner adds (next step, not shipped)
+## The automated runner
 
-The paper's generation runner (P5 in `CODING_AGENT_PROMPTS.md`) wraps the above
-with: model id + provider snapshot, temperature, sample count, the exact prompt
-used, token cost, and run date logged per candidate; archival of every raw model
+P5 is shipped: `generation/runner/`, documented in
+[`docs/EVAL_RUNNER.md`](../docs/EVAL_RUNNER.md). It wraps the manual recipe above
+with a model id + provider snapshot, temperature, sample count, the exact prompt
+sent, token cost, and run date logged per candidate; archival of every raw model
 output; a compile gate; and per-condition aggregation into the same
 `harness.Result` records this repo already understands. Because the harness is
 deterministic, only *generation* is stochastic — scoring a saved candidate is
 fully reproducible.
+
+It supports three API providers (Anthropic, OpenAI, Gemini) and one CLI coding
+agent (`--provider claude-cli`).
+
+**How rule 3 is enforced for a CLI agent.** An agent with a shell cannot simply
+be asked not to read the hidden schedules. It never gets the chance: each run
+builds a sealed scaffold containing only the family's `Service` interface, the
+injected-environment API, and a test wired to `PublicCases()`. `cases.go`,
+`harness/oracle.go`, the correct reference, and the mutants are not copied into
+it, and the scorer it calls resolves the public set and nothing else. Every
+session transcript is then audited for the withheld strings, and the result
+carries the verdict. See
+[CLI coding agents](../docs/EVAL_RUNNER.md#cli-coding-agents-agentic-condition-only).

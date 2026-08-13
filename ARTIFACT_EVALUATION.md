@@ -123,7 +123,14 @@ The intended protocol for the v1.0 release and the LLM study is:
    digest, withholding the hidden schedules themselves.
 2. **Generate under the barrier.** Models/agents are given only the public
    schedules; the generation runner enforces that the hidden set is never read
-   during generation (`generation/README.md`).
+   during generation (`generation/README.md`). For an API model the runner holds
+   the barrier by only ever executing `PublicCases()` during iteration. For a
+   **coding agent with a shell**, which cannot merely be asked, each run is
+   confined to a generated scaffold containing the family interface, the
+   injected-environment API, and the public schedules — and not `cases.go`,
+   `harness/oracle.go`, the correct reference, or the mutants. Every session
+   transcript is then audited for the withheld strings and archived with the
+   result (`docs/EVAL_RUNNER.md`).
 3. **Reveal.** After results are recorded, the hidden schedules and the signed
    manifest are published so anyone can verify that the scoring set matches the
    committed digest and was not altered to fit the results.

@@ -163,6 +163,72 @@ Task: {fam.task_description}
 """.rstrip()
 
 
+def _scaffold_adapter(fam: Family) -> str:
+    """The agentic adapter for a real CLI agent, which does have a shell.
+
+    Same condition, opposite premise from `_agentic_adapter`: that one tells a
+    single-shot model the runner will iterate on its behalf, because it cannot.
+    A CLI agent can, so it is told where it is and what it may run instead —
+    telling it otherwise would be false and would suppress the very iteration
+    the agentic condition is meant to measure.
+    """
+    return f"""
+---
+
+### Your working directory
+
+You are in a prepared working directory for this task. It contains the
+interface, the injected-environment API, a candidate file to edit, and a test
+wired to the **PUBLIC** fault schedules.
+
+- `README.md` — the contract and the rules. Read it first.
+- `API.md`, `harness/api.go` — the injected environment.
+- `tasks/{fam.name}/{fam.name}.go` — `Request`, `Service`, `Factory`. Fixed.
+- `tasks/{fam.name}/candidate.go` — **the only file you edit.**
+- `tasks/{fam.name}/public_test.go` — the public schedules. Fixed.
+
+Iterate however you like:
+
+```sh
+go build ./...   # type check
+go test ./...    # PUBLIC fault schedules, through the benchmark's own oracle
+```
+
+`go test` names the invariants each failing schedule violated. Use it.
+
+The hidden schedules, the oracle implementation, and the reference solution are
+not in this directory and cannot be reached from it. Your final `candidate.go`
+is scored on the **held-out** schedules, so a green `go test` is a floor, not a
+finish line: the public schedules cover retries, concurrency, payload conflict,
+and false dedup, and the held-out ones additionally cover crash-and-recover and
+unknown provider outcomes. Reason about the contract, not about the four tests
+you can see.
+""".rstrip()
+
+
+def _scaffold_contract(fam: Family) -> str:
+    """Output contract for an agent that edits a file rather than returning one."""
+    return f"""
+---
+
+### Output contract
+
+Your deliverable is the contents of `tasks/{fam.name}/candidate.go` when you stop.
+Nothing you write in chat is collected.
+
+- Keep `package {fam.name}` and `func {FACTORY_NAME}(env harness.Env) Service`.
+- Every unexported top-level identifier you declare (func, type, var, const)
+  MUST begin with `{HELPER_PREFIX}` — for example `{HELPER_PREFIX}Fingerprint`,
+  `{HELPER_PREFIX}State`. Scoring compiles your file alongside the other files in
+  this package, and an unprefixed helper collides with them and fails the build.
+- Import only `t4bench/harness` and the Go standard library.
+- Do not edit any other file, and do not add or change tests. Every other file
+  is hashed before and after this session.
+- Leave the file compiling. A file that does not build scores zero on every
+  schedule.
+""".rstrip()
+
+
 def _substitute(text: str, fam: Family) -> str:
     text = _DEFERRED_ENV.sub(
         "The injected environment:\n\n```go\n" + _env_block() + "\n```", text
@@ -204,16 +270,37 @@ def _substitute(text: str, fam: Family) -> str:
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
-def render(condition: str, fam: Family) -> tuple[str, str]:
-    """Render (system, user) for one condition and family."""
+ADAPTERS = ("runner", "scaffold")
+
+
+def render(condition: str, fam: Family, adapter: str = "runner") -> tuple[str, str]:
+    """Render (system, user) for one condition and family.
+
+    `adapter` selects who runs the build-and-test loop in the agentic condition:
+    "runner" for a single-shot API model (the runner iterates for it), "scaffold"
+    for a CLI coding agent with its own shell. The condition's own template is
+    identical either way — only the environment description and the delivery
+    mechanism differ, because only those actually differ.
+    """
     if condition not in CONDITIONS:
         raise ValueError(f"unknown condition {condition!r}; expected one of {CONDITIONS}")
+    if adapter not in ADAPTERS:
+        raise ValueError(f"unknown adapter {adapter!r}; expected one of {ADAPTERS}")
+    if adapter == "scaffold" and condition != "agentic":
+        raise ValueError(
+            "the scaffold adapter exists for CLI coding agents, which are locked to "
+            f"the agentic condition; got {condition!r}"
+        )
     system, user = _split_sections(_read(condition))
     system = _substitute(system, fam)
     user = _substitute(user, fam)
     if condition == "agentic":
-        user += "\n" + _agentic_adapter(fam)
-    user += "\n" + _output_contract(fam)
+        user += "\n" + (
+            _scaffold_adapter(fam) if adapter == "scaffold" else _agentic_adapter(fam)
+        )
+    user += "\n" + (
+        _scaffold_contract(fam) if adapter == "scaffold" else _output_contract(fam)
+    )
     return system, user
 
 

@@ -14,15 +14,25 @@ See docs/EVAL_RUNNER.md.
 import argparse
 import json
 import os
+import shutil
 import sys
 import time
 from datetime import datetime, timezone
 
 from . import evaluate, prompts
+from .agent_cli import (
+    AGENT_CONDITION,
+    AGENT_PROVIDERS,
+    agent_unavailable,
+    audit_session,
+    build_agent,
+    refuse_base_condition,
+)
 from .evaluate import Workspace, extract_go_source
 from .families import ALL_FAMILIES, FAMILIES, ROOT, check_families
 from .model import DEFAULT_EFFORT, DEFAULT_MAX_TOKENS, ModelError, StubClient
 from .providers import DEFAULT_MODELS, PROVIDERS, build_client, missing_credentials
+from .scaffold import AgentScaffold
 
 RESULTS_DIR = os.path.join(ROOT, "results")
 RAW_DIR = os.path.join(RESULTS_DIR, "raw")
@@ -52,8 +62,12 @@ def parse_args(argv=None):
     p.add_argument(
         "--provider",
         default=os.environ.get("T4_PROVIDER", "anthropic"),
-        choices=list(PROVIDERS),
-        help="model vendor; defaults to $T4_PROVIDER, then anthropic",
+        choices=list(PROVIDERS) + list(AGENT_PROVIDERS),
+        help=(
+            "model vendor, or a CLI coding agent. Defaults to $T4_PROVIDER, then "
+            "anthropic. The agent backends (" + ", ".join(AGENT_PROVIDERS) + ") run "
+            "only the agentic condition"
+        ),
     )
     p.add_argument(
         "--model",
@@ -70,14 +84,33 @@ def parse_args(argv=None):
     )
     p.add_argument(
         "--conditions",
-        default="all",
-        help=f"comma-separated subset of {','.join(prompts.CONDITIONS)}, or 'all'",
+        default=None,
+        help=(
+            f"comma-separated subset of {','.join(prompts.CONDITIONS)}, or 'all' "
+            "[default: all]"
+        ),
     )
     p.add_argument(
         "--agentic-iterations",
         type=int,
         default=3,
         help="max revise cycles for the agentic condition, against PUBLIC schedules [default: 3]",
+    )
+    p.add_argument(
+        "--agent-timeout",
+        type=int,
+        default=1800,
+        help=(
+            "wall-clock budget in seconds for one CLI-agent session [default: 1800]. "
+            "The installed CLI exposes no turn cap, so iteration is bounded by this "
+            "and --agent-max-usd; num_turns is recorded per run"
+        ),
+    )
+    p.add_argument(
+        "--agent-max-usd",
+        type=float,
+        default=None,
+        help="spend cap in USD for one CLI-agent session (passed to --max-budget-usd)",
     )
     p.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     p.add_argument("--effort", default=DEFAULT_EFFORT, choices=["low", "medium", "high", "xhigh", "max"])
@@ -120,13 +153,44 @@ def preflight(args):
         problems.append("`go` was not found on PATH (Go 1.24 is required)")
     problems.extend(check_families())
     if not (args.dry_run or args.stub):
-        missing = missing_credentials(args.provider)
-        if missing:
-            problems.append(missing)
+        if args.provider in AGENT_PROVIDERS:
+            problem = agent_unavailable(args.provider)
+            if problem:
+                problems.append(problem)
+        else:
+            missing = missing_credentials(args.provider)
+            if missing:
+                problems.append(missing)
     if args.samples < 1:
         problems.append("--samples must be >= 1")
     if problems:
         sys.exit("preflight failed:\n  - " + "\n  - ".join(problems))
+
+
+def resolve_conditions(args):
+    """Pick the conditions to run, refusing an agent backend under a base condition.
+
+    An explicit `--conditions` naming a base condition is an error, not something
+    to quietly correct: the caller asked for a measurement the backend cannot
+    honestly produce. Leaving `--conditions` at its default is not such a
+    request, so it narrows to `agentic` with a notice.
+    """
+    explicit = args.conditions is not None
+    conditions = _resolve(args.conditions or "all", prompts.CONDITIONS, "condition")
+    if args.provider not in AGENT_PROVIDERS:
+        return conditions
+    if explicit:
+        try:
+            refuse_base_condition(args.provider, conditions)
+        except ModelError as exc:
+            sys.exit(str(exc))
+        return conditions
+    print(
+        f"note: --provider {args.provider} is a coding agent, so this run covers "
+        f"the {AGENT_CONDITION} condition only "
+        f"(pass --conditions {AGENT_CONDITION} to silence this)."
+    )
+    return [AGENT_CONDITION]
 
 
 def compile_error_records(fam, schedules, candidate_id, meta, reason):
@@ -277,12 +341,109 @@ def generate(client, system, user, fam, ws, args, candidate_id, condition, artif
     return source, raw, totals, iterations
 
 
+def generate_with_agent(agent, fam, condition, system, user, artifact_dir):
+    """Run one CLI-agent session in a sealed scaffold; return what it produced.
+
+    The scaffold is built fresh per sample and destroyed afterwards, so no
+    session inherits another's state. Nothing here scores the candidate: the
+    agent's own `go test` sees the PUBLIC schedules only, and the returned source
+    is scored outside, against the full set, by the caller.
+    """
+    # Defence in depth: checked against the condition actually being run, so this
+    # still bites if the CLI-layer guard is ever refactored away.
+    refuse_base_condition(agent.provider, [condition])
+
+    scaffold = AgentScaffold(fam)
+    try:
+        scaffold.build()
+        inventory = scaffold.inventory()
+        run = agent.run(scaffold, system, user)
+        source = scaffold.read_candidate()
+        audit = audit_session(scaffold, run)
+
+        with open(os.path.join(artifact_dir, "response_raw.md"), "w", encoding="utf-8") as fh:
+            fh.write(run.text)
+        with open(os.path.join(artifact_dir, "candidate.go.txt"), "w", encoding="utf-8") as fh:
+            fh.write(source)
+        with open(os.path.join(artifact_dir, "agent_run.json"), "w", encoding="utf-8") as fh:
+            json.dump(
+                {
+                    "provider": agent.provider,
+                    "cli_version": agent.version(),
+                    "num_turns": run.num_turns,
+                    "session_id": run.session_id,
+                    "resolved_model": run.resolved_model,
+                    "wall_clock_s": run.wall_clock_s,
+                    "duration_ms": run.duration_ms,
+                    "stop_reason": run.stop_reason,
+                    "subtype": run.subtype,
+                    "is_error": run.is_error,
+                    "tokens": run.tokens,
+                    "cost_usd": run.cost_usd,
+                    "scaffold": inventory,
+                    "cli_result": run.raw,
+                },
+                fh,
+                indent=2,
+            )
+        with open(os.path.join(artifact_dir, "agent_audit.json"), "w", encoding="utf-8") as fh:
+            json.dump(audit, fh, indent=2)
+        # The transcript is the evidence for the isolation claim, so it is
+        # archived next to the result rather than left in ~/.claude to be
+        # rotated away.
+        if run.transcript_path and os.path.exists(run.transcript_path):
+            shutil.copy2(
+                run.transcript_path, os.path.join(artifact_dir, "agent_transcript.jsonl")
+            )
+        # The scaffold itself is archived, minus the scorer binary. The isolation
+        # claim is only worth as much as a reviewer's ability to check it, and
+        # this is the artifact that lets them: everything the agent could read,
+        # exactly as it read it.
+        snapshot = os.path.join(artifact_dir, "scaffold")
+        shutil.rmtree(snapshot, ignore_errors=True)
+        shutil.copytree(scaffold.dir, snapshot, ignore=shutil.ignore_patterns("bin"))
+        return source, run, audit, inventory
+    finally:
+        scaffold.cleanup()
+
+
+def agent_metadata(agent, run, audit, inventory):
+    """The CLI-agent fields attached to every record of one agent session.
+
+    Two token counts, because they answer different questions. `scaffold_tokens`
+    is what the benchmark handed the agent — small, fixed, and comparable across
+    runs. `injected_context_tokens` is everything the CLI actually put in the
+    model's context, which includes its own system prompt and tool definitions:
+    the reason a CLI agent is not comparable to a single-shot API call and is
+    confined to the agentic condition.
+    """
+    return {
+        "agent_cli_version": agent.version(),
+        "num_turns": run.num_turns,
+        "wall_clock_s": run.wall_clock_s,
+        "scaffold_tokens": inventory["est_tokens"],
+        "injected_context_tokens": (
+            run.tokens["input"] + run.tokens["cache_read"] + run.tokens["cache_creation"]
+        ),
+        "agent": {
+            "provider": agent.provider,
+            "session_id": run.session_id,
+            "duration_ms": run.duration_ms,
+            "stop_reason": run.stop_reason,
+            "subtype": run.subtype,
+            "is_error": run.is_error,
+            "scaffold": inventory,
+            "leak_audit": audit,
+        },
+    }
+
+
 def main(argv=None):
     args = parse_args(argv)
     preflight(args)
 
     families = [FAMILIES[f] for f in _resolve(args.families, ALL_FAMILIES, "family")]
-    conditions = _resolve(args.conditions, prompts.CONDITIONS, "condition")
+    conditions = resolve_conditions(args)
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     started = datetime.now(timezone.utc).isoformat()
@@ -290,9 +451,20 @@ def main(argv=None):
     os.makedirs(run_dir, exist_ok=True)
 
     current = {}
-    client = None
+    client = agent = None
+    is_agent = args.provider in AGENT_PROVIDERS and not (args.stub or args.dry_run)
     if args.stub:
         client = StubClient(lambda: current["fam"])
+    elif is_agent:
+        try:
+            agent = build_agent(
+                args.provider,
+                model=args.model,
+                timeout=args.agent_timeout,
+                max_usd=args.agent_max_usd,
+            )
+        except ModelError as exc:
+            sys.exit(str(exc))
     elif not args.dry_run:
         try:
             client = build_client(
@@ -313,10 +485,16 @@ def main(argv=None):
                 file=sys.stderr,
             )
 
-    model_id = client.model_id if client else (args.model or "dry-run")
-    print(f"run {run_id}  provider={getattr(client, 'provider', args.provider)}  "
+    backend = agent or client
+    model_id = backend.model_id if backend else (args.model or "dry-run")
+    print(f"run {run_id}  provider={getattr(backend, 'provider', args.provider)}  "
           f"model={model_id}  families={len(families)}  "
           f"conditions={len(conditions)}  samples={args.samples}")
+    if is_agent:
+        print(f"  {agent.binary} {agent.version()}  "
+              f"budget={args.agent_timeout}s"
+              + (f"/${args.agent_max_usd}" if args.agent_max_usd else "")
+              + "  scoring: sealed scaffold (public) -> full harness (public + hidden)")
 
     ws = Workspace()
     records, failures = [], []
@@ -326,7 +504,9 @@ def main(argv=None):
         for fam in families:
             current["fam"] = fam
             for condition in conditions:
-                system, user = prompts.render(condition, fam)
+                system, user = prompts.render(
+                    condition, fam, adapter="scaffold" if is_agent else "runner"
+                )
                 for sample in range(args.samples):
                     candidate_id = f"{model_id}/{condition}/s{sample}"
                     label = f"{fam.name:<15} {condition:<14} s{sample}"
@@ -344,11 +524,19 @@ def main(argv=None):
                         continue
 
                     started_at = time.time()
+                    agent_run = agent_audit = None
                     try:
-                        source, _raw, totals, iterations = generate(
-                            client, system, user, fam, ws, args, candidate_id,
-                            condition, artifact_dir,
-                        )
+                        if is_agent:
+                            source, agent_run, agent_audit, inventory = generate_with_agent(
+                                agent, fam, condition, system, user, artifact_dir
+                            )
+                            totals = dict(agent_run.tokens, cost_usd=agent_run.cost_usd)
+                            iterations = []
+                        else:
+                            source, _raw, totals, iterations = generate(
+                                client, system, user, fam, ws, args, candidate_id,
+                                condition, artifact_dir,
+                            )
                     except ModelError as exc:
                         print(f"  {label}  MODEL ERROR: {exc}", file=sys.stderr)
                         failures.append({"candidate": candidate_id, "family": fam.name,
@@ -360,9 +548,9 @@ def main(argv=None):
                         "model_id": model_id,
                         "condition": condition,
                         "sample": sample,
-                        "temperature": client.config_snapshot()["temperature"],
-                        "provider": getattr(client, "provider", args.provider),
-                        "resolved_model": getattr(client, "resolved_model", "") or model_id,
+                        "temperature": backend.config_snapshot()["temperature"],
+                        "provider": getattr(backend, "provider", args.provider),
+                        "resolved_model": getattr(backend, "resolved_model", "") or model_id,
                         "tokens": {k: totals[k] for k in
                                    ("input", "output", "cache_read", "cache_creation",
                                     "reasoning", "total")},
@@ -372,6 +560,8 @@ def main(argv=None):
                         "agentic_iterations": len(iterations) or None,
                         "generated_at": datetime.now(timezone.utc).isoformat(),
                     }
+                    if agent_run is not None:
+                        meta.update(agent_metadata(agent, agent_run, agent_audit, inventory))
 
                     if outcome.compile_status == "error":
                         with open(os.path.join(artifact_dir, "compile_error.txt"), "w",
@@ -396,9 +586,16 @@ def main(argv=None):
                     with open(os.path.join(artifact_dir, "meta.json"), "w", encoding="utf-8") as fh:
                         json.dump({**meta, "factory": outcome.factory,
                                    "compile_status": outcome.compile_status}, fh, indent=2)
+                    extra = ""
+                    if agent_run is not None:
+                        extra = f", {agent_run.num_turns} turns"
+                        if agent_audit["denied_tool_attempts"]:
+                            extra += f", {agent_audit['denied_tool_attempts']} denied"
+                        if not agent_audit["clean"]:
+                            extra += ", CONTAMINATED: " + "; ".join(agent_audit["contamination"])
                     print(f"  {label}  {verdict}  "
                           f"({totals['total']} tok, ${totals['cost_usd']:.4f}, "
-                          f"{time.time() - started_at:.0f}s)")
+                          f"{time.time() - started_at:.0f}s{extra})")
     finally:
         ws.cleanup()
 
@@ -422,9 +619,26 @@ def main(argv=None):
         "run_id": run_id,
         "started_at": started,
         "finished_at": datetime.now(timezone.utc).isoformat(),
-        "model": client.config_snapshot(),
+        "model": backend.config_snapshot(),
         "samples": args.samples,
-        "agentic_iterations_max": args.agentic_iterations,
+        "agentic_iterations_max": None if is_agent else args.agentic_iterations,
+        "agent_backend": (
+            {
+                "provider": agent.provider,
+                "cli_version": agent.version(),
+                "timeout_s": args.agent_timeout,
+                "max_budget_usd": args.agent_max_usd,
+                "condition_lock": AGENT_CONDITION,
+                "isolation": (
+                    "sealed per-family scaffold: family interface + injected-env API "
+                    "+ PUBLIC schedules only. Hidden schedules, oracle internals, the "
+                    "correct reference and the mutants are withheld; WebSearch/WebFetch "
+                    "denied; every session transcript audited."
+                ),
+            }
+            if is_agent
+            else None
+        ),
         "families": [f.name for f in families],
         "conditions": conditions,
         "records_written": len(records),
