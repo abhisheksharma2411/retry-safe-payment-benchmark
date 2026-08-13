@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t4bench.example/schema/result.schema.json",
+  "title": "T4 result records",
+  "description": "The raw result records produced by `go run ./cmd/t4run` and written to results/pilot_results.json. Mirrors harness.Result. This top-level schema validates the whole file (a JSON array); the single-record shape is under $defs/result. These records are the archived input to analysis/make_figures.py.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/result" },
+  "$defs": {
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "semantic_task_id",
+        "candidate",
+        "correct_ref",
+        "schedule_id",
+        "seed",
+        "hidden",
+        "compile_status",
+        "runtime_status",
+        "invariants",
+        "ok"
+      ],
+      "properties": {
+        "family": {
+          "type": "string",
+          "description": "Task family the record belongs to."
+        },
+        "semantic_task_id": {
+          "type": "string",
+          "description": "Language-independent semantic task id (e.g. capture-t1)."
+        },
+        "candidate": {
+          "type": "string",
+          "description": "Candidate id: 'correct' or a mutant id (e.g. m1_unstable_identity)."
+        },
+        "correct_ref": {
+          "type": "boolean",
+          "description": "True iff this candidate is the correct reference implementation."
+        },
+        "schedule_id": {
+          "type": "string",
+          "description": "The fault schedule this record scored."
+        },
+        "seed": {
+          "type": "integer",
+          "description": "The schedule seed used for this run."
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "True iff the schedule is in the hidden (scoring) set."
+        },
+        "compile_status": {
+          "type": "string",
+          "description": "Whether the candidate compiled. Shipped candidates always compile.",
+          "enum": ["success", "error"]
+        },
+        "runtime_status": {
+          "type": "string",
+          "description": "Terminal run status.",
+          "enum": ["completed", "nonconvergent", "crashed"]
+        },
+        "invariants": {
+          "type": "object",
+          "description": "Per-invariant pass/fail map. Keys are the six shared invariants.",
+          "additionalProperties": false,
+          "required": [
+            "at_most_one",
+            "no_lost_effect",
+            "no_false_dedup",
+            "payload_consistency",
+            "reproducible",
+            "recovery"
+          ],
+          "properties": {
+            "at_most_one": { "type": "boolean" },
+            "no_lost_effect": { "type": "boolean" },
+            "no_false_dedup": { "type": "boolean" },
+            "payload_consistency": { "type": "boolean" },
+            "reproducible": { "type": "boolean" },
+            "recovery": { "type": "boolean" }
+          }
+        },
+        "violations": {
+          "description": "Failed invariants in canonical severity order. null (or absent) when nothing was violated.",
+          "type": ["array", "null"],
+          "items": {
+            "type": "string",
+            "enum": [
+              "at_most_one",
+              "no_lost_effect",
+              "no_false_dedup",
+              "payload_consistency",
+              "reproducible",
+              "recovery"
+            ]
+          }
+        },
+        "ok": {
+          "type": "boolean",
+          "description": "True iff every scored invariant passed for this run."
+        }
+      }
+    }
+  }
+}

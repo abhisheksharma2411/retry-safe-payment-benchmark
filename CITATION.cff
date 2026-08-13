@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, please cite it as below."
+title: "T4: Can LLMs Generate Retry-Safe Payment Services? — A Fault-Injection Benchmark"
+abstract: >-
+  T4 is a deterministic fault-injection benchmark for evaluating whether
+  generated payment services are retry-safe under crashes, dropped provider
+  acknowledgements, unknown (timeout) outcomes, and concurrent retries. It ships
+  a single-process deterministic-simulation harness, seven Tier-1 task families
+  (each with one correct reference and five seeded-bug mutants), a shared oracle
+  checking six financial-safety invariants, and public plus hidden fault
+  schedules. This artifact accompanies a double-blind IEEE submission.
+type: software
+authors:
+  - name: "Anonymous"
+version: "0.1.0-pilot"
+date-released: "2026-01-01"
+license: Apache-2.0
+keywords:
+  - benchmark
+  - fault injection
+  - deterministic simulation
+  - idempotency
+  - retry safety
+  - payment systems
+  - large language models
+  - code generation

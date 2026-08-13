@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# T4 benchmark .gitignore
+#
+# NOTE: results/ and analysis/figures/ are intentionally NOT ignored. They are
+# the reproducible artifacts (raw pilot records, measured metrics, and paper
+# figures) and are committed so reviewers can inspect them without re-running
+# the harness. `make reproduce-small` regenerates them byte-for-byte.
+# ---------------------------------------------------------------------------
+
+# Go build output
+/bin/
+*.test
+*.out
+*.exe
+*.exe~
+*.o
+*.a
+coverage.out
+coverage.html
+
+# Go workspace / vendor (this repo uses no external deps)
+/vendor/
+go.work
+go.work.sum
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.env/
+.mypy_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Editor / OS cruft
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/

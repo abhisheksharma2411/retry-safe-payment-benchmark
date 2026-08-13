@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t4bench.example/schema/task.schema.json",
+  "title": "T4 task manifest",
+  "description": "Declarative manifest for one T4 task family / semantic task. The Go source of record is a package under tasks/<family>/; this schema is the language-neutral contract that source is expected to satisfy and that a Java (or other) adapter must mirror. It freezes the benchmark contract: identity definition, payload fingerprint, expected outcome, invariants, rail profile, schedules, and the reference/mutant set.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "semantic_task_id",
+    "family",
+    "tier",
+    "language",
+    "rail_profile",
+    "identity",
+    "expected_outcome",
+    "invariants",
+    "schedules",
+    "candidates"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Fully-qualified instance id: <semantic_task_id>@<language> (e.g. capture-t1@go).",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*@[a-z0-9]+$"
+    },
+    "semantic_task_id": {
+      "type": "string",
+      "description": "Language-independent semantic task id (e.g. capture-t1). Go and Java instances of the same semantic task share this id and must pass semantic-parity tests.",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "family": {
+      "type": "string",
+      "description": "Task family the semantic task belongs to.",
+      "enum": ["capture", "refund", "outbox", "consumer", "ledger", "saga", "reconciliation"]
+    },
+    "tier": {
+      "type": "integer",
+      "description": "Difficulty tier. Tier 1 = single-mechanism reserve-then-effect (shipped). Tiers 2-3 = compounded hazards (future work).",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "language": {
+      "type": "string",
+      "description": "Implementation language of this instance.",
+      "enum": ["go", "java"]
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Natural-language task description handed to the generator (see generation/prompts/)."
+    },
+    "interface": {
+      "type": "object",
+      "description": "The candidate interface the generator must implement.",
+      "additionalProperties": false,
+      "properties": {
+        "service_type": {
+          "type": "string",
+          "description": "Name of the interface/type (e.g. Service)."
+        },
+        "method": {
+          "type": "string",
+          "description": "The single request-handling method (e.g. Capture(Request) harness.Response)."
+        },
+        "factory": {
+          "type": "string",
+          "description": "Signature of the factory that binds an injected Env to a fresh candidate (e.g. func(env harness.Env) Service)."
+        }
+      }
+    },
+    "allowed_deps": {
+      "type": "array",
+      "description": "Packages/modules the candidate may import. Empty or [t4bench/harness] only for Tier-1 Go tasks: no real clock/rand/network/goroutines/globals.",
+      "items": { "type": "string" }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Resource/behaviour bounds enforced by the harness or checked at authoring time.",
+      "additionalProperties": false,
+      "properties": {
+        "max_recovery_steps": {
+          "type": "integer",
+          "description": "Bound on injected ops in a recovery pass before non-convergence is declared.",
+          "minimum": 1
+        },
+        "max_run_steps": {
+          "type": "integer",
+          "description": "Bound on injected ops in a single request run before divergence is declared.",
+          "minimum": 1
+        },
+        "no_wall_clock": { "type": "boolean" },
+        "no_real_rand": { "type": "boolean" },
+        "no_goroutines": { "type": "boolean" },
+        "no_network": { "type": "boolean" },
+        "no_global_state": { "type": "boolean" }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "description": "Definition of the operation identity used for provider-side deduplication. 'Same identity' must be unambiguous: a raw caller key is insufficient (threat T22).",
+      "additionalProperties": false,
+      "required": ["fields", "key_format"],
+      "properties": {
+        "fields": {
+          "type": "array",
+          "description": "The components that together define one operation identity.",
+          "items": {
+            "type": "string",
+            "enum": ["Merchant", "Op", "Resource", "CallerKey"]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "key_format": {
+          "type": "string",
+          "description": "How the fields are joined into the canonical dedup key (e.g. Merchant|Op|Resource|CallerKey)."
+        }
+      }
+    },
+    "payload_fingerprint": {
+      "type": "object",
+      "description": "How the request payload is fingerprinted so a replay of the same identity with a changed payload can be rejected with CONFLICT.",
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Payload fields that participate in the fingerprint (e.g. Amount, Currency)."
+        },
+        "format": {
+          "type": "string",
+          "description": "Fingerprint format (e.g. \"<amount>-<currency>\")."
+        }
+      }
+    },
+    "expected_outcome": {
+      "type": "object",
+      "description": "The financial ground truth after stabilization, independent of any candidate.",
+      "additionalProperties": false,
+      "required": ["total_effects", "distinct_identities"],
+      "properties": {
+        "total_effects": {
+          "type": "integer",
+          "description": "Exact number of external effects that must exist on the rail after the schedule stabilizes.",
+          "minimum": 0
+        },
+        "distinct_identities": {
+          "type": "integer",
+          "description": "Number of distinct effect-identities expected (false-dedup detection).",
+          "minimum": 0
+        },
+        "eligible_identities": {
+          "type": "array",
+          "description": "Identities that must end resolved after recovery.",
+          "items": { "type": "string" }
+        },
+        "conflict_instances": {
+          "type": "array",
+          "description": "Instance ids whose observable response must be CONFLICT.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "description": "The financial-safety invariants scored for this task (the shared six).",
+      "items": {
+        "type": "string",
+        "enum": [
+          "at_most_one",
+          "no_lost_effect",
+          "no_false_dedup",
+          "payload_consistency",
+          "reproducible",
+          "recovery"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "schedules": {
+      "type": "object",
+      "description": "The fault schedules for this task, partitioned into public (development) and hidden (scoring).",
+      "additionalProperties": false,
+      "required": ["public", "hidden"],
+      "properties": {
+        "public": {
+          "type": "array",
+          "items": { "$ref": "fault.schema.json" }
+        },
+        "hidden": {
+          "type": "array",
+          "items": { "$ref": "fault.schema.json" }
+        }
+      }
+    },
+    "reference_hash": {
+      "type": "string",
+      "description": "SHA-256 of the frozen correct-reference source, so a released task cannot be silently altered.",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "mutants": {
+      "type": "array",
+      "description": "The seeded-bug mutants shipped with the task. Each breaks exactly one invariant under the assumed rail profile.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "target_invariant"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Mutant id (e.g. m1_unstable_identity)."
+          },
+          "target_invariant": {
+            "type": "string",
+            "description": "The single invariant this mutant is designed to violate.",
+            "enum": [
+              "at_most_one",
+              "no_lost_effect",
+              "no_false_dedup",
+              "payload_consistency",
+              "reproducible",
+              "recovery"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "What the seeded bug is (e.g. time-based idempotency key)."
+          }
+        }
+      }
+    }
+  }
+}

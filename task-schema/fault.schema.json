@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t4bench.example/schema/fault.schema.json",
+  "title": "T4 fault schedule",
+  "description": "A serializable, replayable adversary: a seeded, deterministic sequence of scheduler transitions. Mirrors harness.Schedule / harness.Event. Exactly one candidate instance is runnable at a time, so replay is deterministic and a failing run can be shrunk to a minimal witness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schedule_id", "seed", "events"],
+  "properties": {
+    "schedule_id": {
+      "type": "string",
+      "description": "Unique schedule id within the family (e.g. capture-crash-after-effect)."
+    },
+    "seed": {
+      "type": "integer",
+      "description": "Seed for the injected deterministic RNG. Combined with (candidate, schedule) it fully determines the run."
+    },
+    "hidden": {
+      "type": "boolean",
+      "description": "Whether this schedule is in the hidden (scoring) set. Public schedules are for development; hidden schedules score and are committed via a SHA-256 manifest before reveal.",
+      "default": false
+    },
+    "note": {
+      "type": "string",
+      "description": "Human-readable description of the hazard the schedule exercises."
+    },
+    "events": {
+      "type": "array",
+      "description": "Ordered scheduler transitions applied to the kernel.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["op"],
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "Transition kind.",
+            "enum": [
+              "start",
+              "step",
+              "run",
+              "run_until",
+              "fault",
+              "crash",
+              "recover",
+              "faults_stop"
+            ]
+          },
+          "inst": {
+            "type": "string",
+            "description": "Target instance id (for start/step/run/run_until/fault/crash)."
+          },
+          "req": {
+            "type": "string",
+            "description": "Request id to launch (for start)."
+          },
+          "fault": {
+            "type": "string",
+            "description": "Fault to inject at the current op (for fault).",
+            "enum": [
+              "drop_response",
+              "provider_timeout_after_commit",
+              "provider_timeout_no_commit",
+              "store_ack_lost"
+            ]
+          },
+          "arg": {
+            "type": "string",
+            "description": "Op-kind to park before (for run_until).",
+            "enum": [
+              "get",
+              "reserve",
+              "complete",
+              "fail",
+              "put",
+              "charge",
+              "query"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "op": { "const": "start" } }, "required": ["op"] },
+            "then": { "required": ["inst", "req"] }
+          },
+          {
+            "if": { "properties": { "op": { "const": "run_until" } }, "required": ["op"] },
+            "then": { "required": ["inst", "arg"] }
+          },
+          {
+            "if": { "properties": { "op": { "const": "fault" } }, "required": ["op"] },
+            "then": { "required": ["inst", "fault"] }
+          },
+          {
+            "if": { "properties": { "op": { "enum": ["step", "run", "crash"] } }, "required": ["op"] },
+            "then": { "required": ["inst"] }
+          }
+        ]
+      }
+    }
+  }
+}
