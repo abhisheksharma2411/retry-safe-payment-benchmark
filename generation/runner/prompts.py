@@ -108,6 +108,10 @@ Return exactly one Go file and nothing else:
 
 - `package {fam.name}` — the file is compiled inside the family package.
 - Provide `func {FACTORY_NAME}(env harness.Env) Service`.
+- **`Request`, `Service`, and `Factory` already exist in this package.** They are
+  shown above so you know their shape — do NOT declare them again. A second
+  `type Request struct` or `type Service interface` is a redeclaration and fails
+  the build.
 - Every unexported top-level identifier you declare (func, type, var, const)
   MUST begin with `{HELPER_PREFIX}` — for example `{HELPER_PREFIX}Fingerprint`,
   `{HELPER_PREFIX}State`. The file is compiled alongside the other files in this
@@ -217,6 +221,8 @@ Your deliverable is the contents of `tasks/{fam.name}/candidate.go` when you sto
 Nothing you write in chat is collected.
 
 - Keep `package {fam.name}` and `func {FACTORY_NAME}(env harness.Env) Service`.
+- **`Request`, `Service`, and `Factory` already exist in `{fam.name}.go`.** Do NOT
+  declare them again in `candidate.go`; a redeclaration fails the build.
 - Every unexported top-level identifier you declare (func, type, var, const)
   MUST begin with `{HELPER_PREFIX}` — for example `{HELPER_PREFIX}Fingerprint`,
   `{HELPER_PREFIX}State`. Scoring compiles your file alongside the other files in

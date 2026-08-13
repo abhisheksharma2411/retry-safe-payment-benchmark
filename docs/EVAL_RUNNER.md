@@ -350,11 +350,21 @@ cannot bias one against another:
    that carry a `Payload` (`outbox`, `consumer`) get the correct field
    substituted, so every condition describes that family's real interface.
 2. **An output contract.** One Go file, `package <family>`, a factory named
-   `NewCandidate`, and every unexported top-level identifier prefixed `llm`. The
-   prefix matters: the candidate compiles *inside* the family package (the wiring
-   contract in `generation/README.md`), so an unprefixed `fingerprint` or
-   `conflict` collides with the reference implementation's own helpers and fails
-   the build for reasons that have nothing to do with retry-safety.
+   `NewCandidate`, every unexported top-level identifier prefixed `llm`, and an
+   explicit statement that `Request`, `Service` and `Factory` already exist and
+   must not be redeclared. All of it exists for one reason: the candidate
+   compiles *inside* the family package (the wiring contract in
+   `generation/README.md`), so a name it shares with the package fails the build
+   for reasons that have nothing to do with retry-safety.
+
+   The redeclaration clause was added after measuring its absence. A first sweep
+   showed a 0.68 compile rate, and **10 of 16 failures were
+   `Request redeclared in this block`** — the prompt displays `type Request
+   struct` and `type Service interface` so the model knows their shape, and
+   models reasonably wrote them out again. That is prompt-trap navigation, not
+   retry-safety, and at ~30% of candidates it would have swamped the signal the
+   benchmark exists to measure. Re-tested on the same model and condition after
+   the fix: 4/4 compiled where it had been 1/4.
 
 `agentic.md` additionally assumes an interactive shell the runner does not grant;
 it gets an adapter note explaining that the runner performs the build-and-run
