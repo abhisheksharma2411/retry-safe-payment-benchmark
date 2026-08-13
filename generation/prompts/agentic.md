@@ -9,6 +9,50 @@ suite produces more retry-safe code than a single shot.
 This file is the agent's system prompt plus its initial task message. The runner
 (generation/README.md) supplies the sandbox and enforces the hidden-set barrier.
 
+## Reference: the injected environment and interface
+
+Reproduced here so this file is correct read on its own. In the real agentic
+condition the model reads these from the checkout (`harness/`,
+`tasks/<family>/<family>.go`); the runner splices the same definitions into the
+rendered prompt when no checkout is available. This section is documentation for
+the reader and is **not** part of the prompt the model receives.
+
+```go
+type Env interface {
+    Store() Store        // durable, crash-surviving key/value
+    Provider() Provider  // external effects log ("the rail"), keyed by Identity
+    Clock() Clock        // injected logical time (monotonic counter)
+    Rand() Rand          // injected deterministic randomness
+    SetResponse(Response)
+}
+type Store interface {
+    Get(key string) (Record, bool)
+    Reserve(key, fingerprint string) bool // atomic create-if-absent; true iff caller created it
+    Complete(key, ref string)
+    Fail(key, errCode string)
+    Put(key string, rec Record)
+}
+type Provider interface {
+    Charge(id Identity, amt Money) (ref string, err error) // the ONE external effect
+    Query(id Identity) (ref string, found bool, err error) // reconcile an unknown outcome
+}
+type Identity struct{ Merchant, Op, Resource, CallerKey string } // .Key() is the canonical dedup key
+type Money struct{ Amount int64; Currency string }
+type Record struct{ State, Fingerprint, Ref, ErrCode string } // State: ""|reserved|completed|failed
+type Response struct{ Status, Ref, Err string }               // Status: OK|CONFLICT|IN_PROGRESS|FAILED|ERROR
+```
+
+```go
+type Request struct {
+    ID       string
+    Identity harness.Identity
+    Amount   harness.Money      // named Payload in the outbox and consumer families
+}
+type Service interface {
+    Capture(Request) harness.Response   // per-family: Refund/Publish/Consume/Post/Execute/Apply
+}
+```
+
 ---
 
 ## SYSTEM

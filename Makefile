@@ -2,8 +2,13 @@
 #
 # All commands are POSIX-sh compatible and assume a Go 1.24 toolchain plus
 # python3 with matplotlib and numpy (see Dockerfile for a pinned environment).
-# The harness is deterministic, so every target below reproduces byte-identical
-# output across runs on the same toolchain.
+# Only the `figures` step needs Python; everything else is pure Go.
+#
+# The harness is deterministic. On the same toolchain the data artifacts
+# (pilot_results.json, metrics.csv, metrics_summary.json, paper_data.tex)
+# regenerate byte-for-byte; the figure PNGs regenerate pixel-for-pixel but are
+# NOT byte-identical across platforms, because libpng/zlib builds and the
+# matplotlib version stamp differ. Use the Dockerfile for a byte-stable image.
 
 GO      ?= go
 PYTHON  ?= python3
@@ -29,6 +34,18 @@ help:
 	@echo "  make reproduce-paper  reproduce-small, then print results/metrics_summary.json"
 	@echo "  make manifest         print the SHA-256 of $(PILOT)"
 	@echo "  make clean            remove build output (keeps committed artifacts)"
+	@echo ""
+	@echo "Python: only 'figures' (and therefore 'reproduce-small') needs python3"
+	@echo "  with matplotlib + numpy. If they are missing:"
+	@echo "    python3 -m venv .venv && .venv/bin/pip install matplotlib numpy"
+	@echo "    make figures PYTHON=.venv/bin/python"
+	@echo "  Or use the Dockerfile, which ships a pinned plotting stack."
+	@echo ""
+	@echo "Reproducibility: data artifacts (pilot_results.json, metrics.csv,"
+	@echo "  metrics_summary.json, paper_data.tex) regenerate byte-for-byte on the"
+	@echo "  same toolchain. Figure PNGs regenerate pixel-for-pixel but are not"
+	@echo "  byte-identical across platforms (libpng/zlib + matplotlib version"
+	@echo "  stamp); use the Dockerfile for a byte-stable image."
 
 ## smoke: compile the whole module and run the harness tests quickly
 smoke:

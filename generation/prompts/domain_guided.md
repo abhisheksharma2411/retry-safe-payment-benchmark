@@ -64,8 +64,32 @@ a failure mode that is actively tested.
 
 Implement the `{{SERVICE_TYPE}}` interface for the `{{FAMILY}}` task.
 
-(Include the `Env` / `Store` / `Provider` / `Identity` / `Money` / `Record` /
-`Response` definitions verbatim, exactly as in the zero-shot condition.)
+The injected environment:
+
+```go
+type Env interface {
+    Store() Store        // durable, crash-surviving key/value
+    Provider() Provider  // external effects log ("the rail"), keyed by Identity
+    Clock() Clock        // injected logical time (monotonic counter)
+    Rand() Rand          // injected deterministic randomness
+    SetResponse(Response)
+}
+type Store interface {
+    Get(key string) (Record, bool)
+    Reserve(key, fingerprint string) bool // atomic create-if-absent; true iff caller created it
+    Complete(key, ref string)
+    Fail(key, errCode string)
+    Put(key string, rec Record)
+}
+type Provider interface {
+    Charge(id Identity, amt Money) (ref string, err error) // the ONE external effect
+    Query(id Identity) (ref string, found bool, err error) // reconcile an unknown outcome
+}
+type Identity struct{ Merchant, Op, Resource, CallerKey string } // .Key() is the canonical dedup key
+type Money struct{ Amount int64; Currency string }
+type Record struct{ State, Fingerprint, Ref, ErrCode string } // State: ""|reserved|completed|failed
+type Response struct{ Status, Ref, Err string }               // Status: OK|CONFLICT|IN_PROGRESS|FAILED|ERROR
+```
 
 The interface you must implement:
 

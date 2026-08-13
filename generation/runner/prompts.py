@@ -8,14 +8,13 @@ verbatim, as in the zero-shot condition"). This module turns one of those
 documents into something a model can actually be sent, and records exactly what
 was sent so a reviewer can audit it.
 
-Three expansions are load-bearing and are documented in docs/EVAL_RUNNER.md:
+The templates are self-contained: each one carries the full injected-environment
+interface and its own `Request` definition, so it is correct read standalone.
+Three expansions remain, documented in docs/EVAL_RUNNER.md:
 
-  1. `retrieval` and `domain_guided` both defer the `Env`/`Store`/`Provider`
-     definitions to "the zero-shot condition". Left unexpanded, those two
-     conditions would ship with no environment definitions at all — a silent
-     handicap that would corrupt the cross-condition comparison the benchmark
-     exists to measure. Both are spliced with the canonical block lifted from
-     `zero_shot.md`, so all four conditions describe an identical environment.
+  1. The templates hardcode `capture`'s `Amount` payload field. Families that
+     carry a `Payload` instead (`outbox`, `consumer`) get the field rewritten,
+     so every condition describes that family's actual interface.
 
   2. Every condition gets the same output contract appended (one Go file, fixed
      factory name, `llm`-prefixed unexported helpers). Applied uniformly, so it
@@ -23,7 +22,13 @@ Three expansions are load-bearing and are documented in docs/EVAL_RUNNER.md:
 
   3. `agentic` assumes an interactive shell the runner does not grant. It gets
      an adapter note explaining that the runner performs the build-and-run loop
-     against the PUBLIC schedules on its behalf.
+     against the PUBLIC schedules on its behalf, plus the interface inline
+     (that condition's premise is a repo checkout it cannot actually read here).
+
+`_DEFERRED_ENV` and the `Request`-injection below are retained as defensive
+no-ops: they fire only if a template regresses to deferring its definitions to
+another condition, which would otherwise silently ship that condition with no
+environment description and corrupt the cross-condition comparison.
 """
 
 import hashlib

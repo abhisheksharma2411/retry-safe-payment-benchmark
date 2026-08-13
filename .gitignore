@@ -4,7 +4,9 @@
 # NOTE: results/ and analysis/figures/ are intentionally NOT ignored. They are
 # the reproducible artifacts (raw pilot records, measured metrics, and paper
 # figures) and are committed so reviewers can inspect them without re-running
-# the harness. `make reproduce-small` regenerates them byte-for-byte.
+# the harness. `make reproduce-small` regenerates the data artifacts
+# byte-for-byte and the figure PNGs pixel-for-pixel (PNG container bytes differ
+# across platforms) — see README "Reproducibility and determinism".
 # ---------------------------------------------------------------------------
 
 # Model-evaluation output (generation/runner). Unlike the pilot artifacts above,

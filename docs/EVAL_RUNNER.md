@@ -207,20 +207,24 @@ the final candidate is scored against the full set.
 
 ### Documented prompt expansions
 
-The templates in `generation/prompts/` are written for a human prompt author, so
-the renderer expands them. Three of these are load-bearing and are applied
-**uniformly across all four conditions**, so they cannot bias one against another:
+Each file in `generation/prompts/` is self-contained — it carries the full
+injected-environment interface and its own `Request` definition, so it is correct
+read standalone. (Earlier revisions of `retrieval.md` and `domain_guided.md`
+deferred the `Env` block to "the zero-shot condition", and `retrieval.md` never
+defined `Request` at all; both were inlined. `agentic.md` carries them as a
+reference section in its preamble — the renderer reads only the `## SYSTEM` and
+`## USER` sections, so that block documents the file without entering the prompt,
+which still directs a real agent to read the definitions from the checkout. The
+renderer keeps the splice logic as a defensive no-op in case a template
+regresses.)
 
-1. **Environment definitions.** `retrieval.md` and `domain_guided.md` both defer
-   the `Env`/`Store`/`Provider` block to "the zero-shot condition". Left
-   unexpanded, those two conditions would ship with no environment definitions
-   at all. Both are spliced with the canonical block from `zero_shot.md`.
-2. **The `Request` struct.** `retrieval.md` names the `Service` method but never
-   defines `Request`, so that condition alone would leave the model guessing
-   whether the payload field is `Amount` or `Payload`. The struct is injected.
-   Relatedly, the templates hardcode `capture`'s `Amount`; families that carry a
-   `Payload` (`outbox`, `consumer`) get the correct field.
-3. **An output contract.** One Go file, `package <family>`, a factory named
+Two expansions remain, applied **uniformly across all four conditions** so they
+cannot bias one against another:
+
+1. **The payload field.** The templates hardcode `capture`'s `Amount`; families
+   that carry a `Payload` (`outbox`, `consumer`) get the correct field
+   substituted, so every condition describes that family's real interface.
+2. **An output contract.** One Go file, `package <family>`, a factory named
    `NewCandidate`, and every unexported top-level identifier prefixed `llm`. The
    prefix matters: the candidate compiles *inside* the family package (the wiring
    contract in `generation/README.md`), so an unprefixed `fingerprint` or
