@@ -7,6 +7,14 @@
 # the harness. `make reproduce-small` regenerates them byte-for-byte.
 # ---------------------------------------------------------------------------
 
+# Model-evaluation output (generation/runner). Unlike the pilot artifacts above,
+# these are stochastic model outputs rather than deterministic harness output:
+# they do not reproduce byte-for-byte, they grow without bound across runs, and
+# committing a smoke-test run would let it masquerade as a measured result.
+# Archive a real run deliberately (`git add -f`) if you want it in the record.
+/results/raw/
+/results/model_results.json
+
 # Go build output
 /bin/
 *.test

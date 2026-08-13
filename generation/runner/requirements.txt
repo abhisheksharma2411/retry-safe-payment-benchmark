@@ -1,0 +1,8 @@
+# Dependencies for the model-evaluation runner only.
+#
+# These are NOT dependencies of the benchmark itself: `make reproduce-small`
+# (Go harness + pilot + figures) does not need them, and the Go module remains
+# standard-library-only. Install them only if you are evaluating a live model.
+anthropic>=0.69     # --provider anthropic
+openai>=1.100        # --provider openai
+google-genai>=1.0    # --provider gemini
