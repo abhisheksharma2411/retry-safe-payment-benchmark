@@ -4,39 +4,39 @@
   "n_candidates_per_family": 6,
   "compile_rate": 1.0,
   "functional_pass_rate_happy": 0.8333,
-  "unconditional_safety_rate": 0.6,
-  "safety_given_functional_hidden": 0.7333,
+  "unconditional_safety_rate": 0.7,
+  "safety_given_functional_hidden": 0.8333,
   "hidden_survival_R1": {
     "correct": 1.0,
-    "m1 unstable-identity": 0.5,
+    "m1 unstable-identity": 0.6667,
     "m2 no-payload-check": 0.8333,
-    "m3 raw-key-only": 0.6667,
+    "m3 raw-key-only": 0.8333,
     "m4 vacuous-success": 0.0,
-    "m5 recovery-loops": 0.6667
+    "m5 recovery-loops": 0.8333
   },
   "hidden_survival_R_at_max_k": {
     "correct": 1.0,
-    "m1 unstable-identity": 0.0017,
+    "m1 unstable-identity": 0.0263,
     "m2 no-payload-check": 0.1994,
-    "m3 raw-key-only": 0.0263,
+    "m3 raw-key-only": 0.1994,
     "m4 vacuous-success": 0.0,
-    "m5 recovery-loops": 0.0263
+    "m5 recovery-loops": 0.1994
   },
   "invariant_violation_counts": {
     "at_most_one": 21,
     "no_lost_effect": 84,
-    "no_false_dedup": 84,
-    "payload_consistency": 70,
+    "no_false_dedup": 14,
+    "payload_consistency": 14,
     "reproducible": 0,
     "recovery": 7
   },
   "per_family_safety_rate": {
-    "capture": 0.6,
-    "consumer": 0.6,
-    "ledger": 0.6,
-    "outbox": 0.6,
-    "reconciliation": 0.6,
-    "refund": 0.6,
-    "saga": 0.6
+    "capture": 0.7,
+    "consumer": 0.7,
+    "ledger": 0.7,
+    "outbox": 0.7,
+    "reconciliation": 0.7,
+    "refund": 0.7,
+    "saga": 0.7
   }
 }

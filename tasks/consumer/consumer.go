@@ -128,6 +128,11 @@ func (m *m1) Consume(req Request) harness.Response {
 	store, prov := m.env.Store(), m.env.Provider()
 	key := req.Identity.Key()
 	if rec, ok := store.Get(key); ok && rec.State == "completed" {
+		// Reusing this identity with a different payload is a conflict, not a
+		// replay. Checked here so this mutant carries only its own seeded fault.
+		if rec.Fingerprint != fingerprint(req.Payload) {
+			return conflict()
+		}
 		return okResp(rec.Ref)
 	}
 	store.Reserve(key, fingerprint(req.Payload))
@@ -186,6 +191,11 @@ func (m *m3) Consume(req Request) harness.Response {
 	rawID := harness.Identity{CallerKey: req.Identity.CallerKey} // BUG: under-scoped
 	key := rawID.Key()
 	if rec, ok := store.Get(key); ok && rec.State == "completed" {
+		// Reusing this identity with a different payload is a conflict, not a
+		// replay. Checked here so this mutant carries only its own seeded fault.
+		if rec.Fingerprint != fingerprint(req.Payload) {
+			return conflict()
+		}
 		return okResp(rec.Ref)
 	}
 	store.Reserve(key, fingerprint(req.Payload))
@@ -213,6 +223,11 @@ func (m *m4) Consume(req Request) harness.Response {
 	store := m.env.Store()
 	key := req.Identity.Key()
 	if rec, ok := store.Get(key); ok && rec.State == "completed" {
+		// Reusing this identity with a different payload is a conflict, not a
+		// replay. Checked here so this mutant carries only its own seeded fault.
+		if rec.Fingerprint != fingerprint(req.Payload) {
+			return conflict()
+		}
 		return okResp(rec.Ref)
 	}
 	store.Reserve(key, fingerprint(req.Payload))
@@ -231,6 +246,11 @@ func (m *m5) Consume(req Request) harness.Response {
 	store, prov := m.env.Store(), m.env.Provider()
 	key := req.Identity.Key()
 	if rec, ok := store.Get(key); ok && rec.State == "completed" {
+		// Reusing this identity with a different payload is a conflict, not a
+		// replay. Checked here so this mutant carries only its own seeded fault.
+		if rec.Fingerprint != fingerprint(req.Payload) {
+			return conflict()
+		}
 		return okResp(rec.Ref)
 	}
 	store.Reserve(key, fingerprint(req.Payload))

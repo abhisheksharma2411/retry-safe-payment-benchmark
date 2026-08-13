@@ -1,7 +1,7 @@
 candidate_type,all_pass,all_total,hidden_pass,hidden_total,R1,R_maxk
 correct,70,70,42,42,1.0000,1.0000
-m1 unstable-identity,35,70,21,42,0.5000,0.0017
+m1 unstable-identity,49,70,28,42,0.6667,0.0263
 m2 no-payload-check,56,70,35,42,0.8333,0.1994
-m3 raw-key-only,42,70,28,42,0.6667,0.0263
+m3 raw-key-only,56,70,35,42,0.8333,0.1994
 m4 vacuous-success,0,70,0,42,0.0000,0.0000
-m5 recovery-loops,49,70,28,42,0.6667,0.0263
+m5 recovery-loops,63,70,35,42,0.8333,0.1994

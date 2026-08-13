@@ -117,8 +117,14 @@ func CheckFinancial(obs Observation, spec Spec) OracleResult {
 	if total < spec.TotalEffects {
 		r.Fail(InvNoLostEffect, "fewer effects than expected (possible lost or vacuous)")
 	}
-	// InvNoFalseDedup: distinct valid identities were not collapsed.
-	if spec.DistinctIdentities > 0 && DistinctIdentityCount(obs.Debits) < spec.DistinctIdentities {
+	// InvNoFalseDedup: distinct valid identities were not collapsed. This requires
+	// at least one observed effect. A run that produced no effects at all has
+	// already failed InvNoLostEffect, and its distinct-identity count is trivially
+	// zero — reporting a "collapse" there would charge one underlying failure
+	// (nothing happened) to two independent invariants and overstate the fault
+	// count for vacuous-success candidates.
+	if spec.DistinctIdentities > 0 && total > 0 &&
+		DistinctIdentityCount(obs.Debits) < spec.DistinctIdentities {
 		r.Fail(InvNoFalseDedup, "distinct valid identities were collapsed")
 	}
 	// InvPayloadConsistency: conflicting replays were rejected with CONFLICT.

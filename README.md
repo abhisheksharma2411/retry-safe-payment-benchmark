@@ -132,25 +132,32 @@ references and mutants — **no synthetic data, no LLM output**. Source:
 | Families × candidates × schedules | 7 × 6 × 10 |
 | Compile rate | 1.00 |
 | Functional pass (no-fault "happy" schedule) | 0.833 |
-| Unconditional safety (all runs) | 0.60 |
-| Safety \| functional (hidden schedules) | 0.733 |
+| Unconditional safety (all runs) | 0.70 |
+| Safety \| functional (hidden schedules) | 0.833 |
 
 Hidden-schedule survival by candidate type (42 hidden schedules per type):
 
 | Candidate | Survives 1 hidden (`R₁`) | Survives 8 hidden (`R₈`) |
 |-----------|:---:|:---:|
 | correct reference | **1.000** | **1.000** |
-| m1 unstable-identity | 0.500 | 0.0017 |
+| m1 unstable-identity | 0.667 | 0.026 |
 | m2 no-payload-check | 0.833 | 0.199 |
-| m3 raw-key-only | 0.667 | 0.026 |
+| m3 raw-key-only | 0.833 | 0.199 |
 | m4 vacuous-success | 0.000 | 0.000 |
-| m5 recovery-loops | 0.667 | 0.026 |
+| m5 recovery-loops | 0.833 | 0.199 |
 
 The **correct reference survives all 42 hidden schedules** (`R_k = 1.0` for
 every `k`), while every mutant's survival decays toward 0 as more independent
 hidden schedules are drawn — the reliability separation the benchmark is built
 to measure. Each seeded bug is detected via its intended invariant (below),
 which is the oracle-validity result.
+
+The mutants are **single-fault by construction**: each trips exactly the one
+invariant it was seeded to break, so the per-invariant failure counts attribute
+cleanly to a cause. The single exception is `m3 raw-key-only`, which also trips
+`no_lost_effect` — collapsing two distinct identities into one effect genuinely
+loses an effect as well as collapsing identities, so both violations are real
+consequences of the same bug rather than double-counting.
 
 ![Measured schedule-survival: correct reference vs. seeded-bug mutants](analysis/figures/survival.png)
 
