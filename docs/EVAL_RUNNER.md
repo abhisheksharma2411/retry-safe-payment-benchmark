@@ -242,6 +242,63 @@ treated the same way: the session did not finish, so whatever `candidate.go`
 happened to be on disk when the clock ran out is not scored as if it had been
 submitted.
 
+## Model provenance and the contamination argument
+
+Every record carries a `provenance` block naming the exact snapshot that served
+it, so the paper can argue that a model could not have trained on this
+benchmark. The argument rests on one comparison, and both sides of it are
+measured rather than asserted:
+
+```json
+"provenance": {
+  "requested_model": "gemini-flash-latest",
+  "resolved_model": "gemini-3.6-flash",
+  "alias_requested": true,
+  "model_snapshot": "3.6-flash-07-2026",
+  "model_display_name": "Gemini 3.6 Flash",
+  "snapshot_date": "2026-07",
+  "release_date": null,
+  "training_cutoff": null,
+  "training_cutoff_source": "not exposed by the Gemini API",
+  "repo_published_at": "2026-08-13",
+  "snapshot_predates_repo_publication": true
+}
+```
+
+`REPO_PUBLISHED_AT` (`2026-08-13`) is the contamination boundary — the date this
+repository became public.
+
+**Aliases are resolved, not recorded as typed.** `provenance` is captured *after*
+the first completion, because a `-latest` alias only resolves to a concrete
+snapshot in the response (`model_version`). `gemini-flash-latest` requested here
+resolves to `gemini-3.6-flash`; the alias's own metadata carries no date at all,
+so recording the requested name would have produced an unfalsifiable claim.
+
+| API | Snapshot source | Training cutoff |
+|---|---|---|
+| Gemini | `models.get(...).version`, e.g. `3.1-pro-preview-01-2026` | not exposed |
+| Anthropic | `models.retrieve(...).created_at` | not exposed |
+| OpenAI | `models.retrieve(...).created` (unix) | not exposed |
+| `claude-cli` | serving model from `modelUsage`; no metadata endpoint | not exposed |
+
+**No API exposes a training cutoff.** It is recorded as `null` with the reason
+rather than guessed — a fabricated cutoff inside a contamination argument would
+be worse than an absent one. The snapshot date is a sound substitute in the
+direction the argument needs: a model published in January cannot have trained
+on anything from August.
+
+**What this does and does not license.** It supports the narrow, checkable claim
+that a model cannot have memorised *this repository* — its hidden schedules, its
+reference implementations, its mutants. It does **not** support the claim that
+the model lacks knowledge of idempotency, reserve-then-effect, or retry-safe
+payment design; that material is widely documented and is certainly in every
+model's training data. The paper should make the first claim and not the second.
+
+For `claude-cli` the snapshot date is unavailable — the CLI reports which model
+served the session but exposes no metadata endpoint — so
+`snapshot_predates_repo_publication` is `null` rather than assumed. Setting
+`ANTHROPIC_API_KEY` would resolve it.
+
 ## How scoring works
 
 The runner copies the Go module into a scratch workspace, writes the candidate

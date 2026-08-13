@@ -34,6 +34,7 @@ from .evaluate import Workspace, extract_go_source
 from .families import ALL_FAMILIES, FAMILIES, ROOT, check_families
 from .model import DEFAULT_EFFORT, DEFAULT_MAX_TOKENS, ModelError, StubClient
 from .providers import DEFAULT_MODELS, PROVIDERS, build_client, missing_credentials
+from .provenance import REPO_PUBLISHED_AT, agent_provenance, model_provenance
 from .scaffold import AgentScaffold
 
 RESULTS_DIR = os.path.join(ROOT, "results")
@@ -493,7 +494,11 @@ def main(argv=None):
     families = [FAMILIES[f] for f in _resolve(args.families, ALL_FAMILIES, "family")]
     conditions = resolve_conditions(args)
 
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    # The pid suffix keeps concurrent invocations apart. run_id names the raw
+    # artifact directory, and a full sweep runs one process per model, so a
+    # bare second-resolution stamp would let two of them share a directory and
+    # overwrite each other's config.json.
+    run_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{os.getpid():05d}"
     started = datetime.now(timezone.utc).isoformat()
     run_dir = os.path.join(RAW_DIR, run_id)
     os.makedirs(run_dir, exist_ok=True)
@@ -611,6 +616,17 @@ def main(argv=None):
                         "agentic_iterations": len(iterations) or None,
                         "generated_at": datetime.now(timezone.utc).isoformat(),
                     }
+                    # Resolved after the call, so a `-latest` alias reports the
+                    # concrete snapshot that actually served this request rather
+                    # than the alias the caller typed.
+                    meta["provenance"] = (
+                        agent_provenance(agent_run.resolved_model, agent.version())
+                        if agent_run is not None
+                        else model_provenance(
+                            client, model_id, getattr(client, "resolved_model", "")
+                        )
+                    )
+                    meta["repo_published_at"] = REPO_PUBLISHED_AT
                     if agent_run is not None:
                         meta.update(
                             agent_metadata(
@@ -680,6 +696,8 @@ def main(argv=None):
         "started_at": started,
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "model": backend.config_snapshot(),
+        "provenance": (records[0].get("provenance") if records else None),
+        "repo_published_at": REPO_PUBLISHED_AT,
         "samples": args.samples,
         "agentic_iterations_max": None if is_agent else args.agentic_iterations,
         "agent_backend": (
