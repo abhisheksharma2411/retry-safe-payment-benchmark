@@ -141,12 +141,12 @@ references and mutants — **no synthetic data, no LLM output**. Source:
 
 | Metric | Value |
 |--------|-------|
-| Result records | 420 |
-| Families × candidates × schedules | 7 × 6 × 10 |
+| Result records | 490 |
+| Families × candidates × schedules | 7 × 7 × 10 |
 | Compile rate | 1.00 |
-| Functional pass (no-fault "happy" schedule) | 0.833 |
-| Unconditional safety (all runs) | 0.70 |
-| Safety \| functional (hidden schedules) | 0.833 |
+| Functional pass (no-fault "happy" schedule) | 0.857 (42/49) |
+| Unconditional safety (all runs) | 0.70 (343/490) |
+| Safety \| functional (hidden schedules) | 0.806 (203/252) |
 
 Hidden-schedule survival by candidate type (42 hidden schedules per type):
 

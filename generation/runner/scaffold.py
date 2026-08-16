@@ -3,7 +3,7 @@
 A CLI agent (`claude -p`, and any future `codex exec`) differs from a
 single-shot API call in one way that matters here: it has a filesystem and a
 shell. Handing it the repository would hand it `HiddenCases()`, `Correct`, the
-five mutants, and `harness.CheckFinancial` — that is, the answer key and the
+six mutants, and `harness.CheckFinancial` — that is, the answer key and the
 scoring set. The hidden-set commitment in ARTIFACT_EVALUATION.md would be void,
 and the resulting numbers would measure nothing.
 
@@ -25,7 +25,7 @@ and nothing else. What is deliberately absent:
     harness package is types only: no `CheckFinancial`, no `Spec`, not even the
     kernel's `Run`;
   * the correct reference and the mutants — the slice in (a) stops at the
-    `Factory` declaration, above `Correct` and `M1`..`M5`.
+    `Factory` declaration, above `Correct` and `M1`..`M6`.
 
 `go test` still returns real oracle verdicts, because `public_test.go` shells
 out to `bin/t4public`: a per-scaffold binary with the workspace path linked in
@@ -142,7 +142,7 @@ def _service_source(fam: Family) -> str:
     """The family's public interface: package doc, Request, Service, Factory.
 
     Sliced from the family source, which continues on into the correct reference
-    and the five mutants — so the slice is taken by declaration name, never by
+    and the six mutants — so the slice is taken by declaration name, never by
     line offset, and a missing declaration is a hard error rather than a quietly
     truncated file.
     """

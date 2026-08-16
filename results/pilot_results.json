@@ -1298,6 +1298,222 @@
     "ok": true
   },
   {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-concurrent-retry",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "capture",
+    "semantic_task_id": "capture-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "capture-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
     "family": "refund",
     "semantic_task_id": "refund-t1",
     "candidate": "correct",
@@ -2596,6 +2812,222 @@
     "ok": true
   },
   {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-concurrent-retry",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "refund",
+    "semantic_task_id": "refund-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "refund-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
     "family": "outbox",
     "semantic_task_id": "outbox-t1",
     "candidate": "correct",
@@ -3894,6 +4326,222 @@
     "ok": true
   },
   {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-concurrent-retry",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "outbox",
+    "semantic_task_id": "outbox-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "outbox-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
     "family": "consumer",
     "semantic_task_id": "consumer-t1",
     "candidate": "correct",
@@ -5192,6 +5840,222 @@
     "ok": true
   },
   {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-duplicate-delivery",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "consumer",
+    "semantic_task_id": "consumer-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "consumer-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
     "family": "ledger",
     "semantic_task_id": "ledger-t1",
     "candidate": "correct",
@@ -6490,6 +7354,222 @@
     "ok": true
   },
   {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-concurrent-retry",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "ledger",
+    "semantic_task_id": "ledger-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "ledger-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
     "family": "saga",
     "semantic_task_id": "saga-t1",
     "candidate": "correct",
@@ -7770,6 +8850,222 @@
     "family": "saga",
     "semantic_task_id": "saga-t1",
     "candidate": "m5_recovery_loops",
+    "correct_ref": false,
+    "schedule_id": "saga-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-concurrent-retry",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "saga-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "saga",
+    "semantic_task_id": "saga-t1",
+    "candidate": "m6_replay_new_reference",
     "correct_ref": false,
     "schedule_id": "saga-false-dedup-hidden",
     "seed": 10,
@@ -9068,6 +10364,222 @@
     "family": "reconciliation",
     "semantic_task_id": "recon-t1",
     "candidate": "m5_recovery_loops",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-false-dedup-hidden",
+    "seed": 10,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-happy",
+    "seed": 1,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-duplicate-update",
+    "seed": 2,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-payload-conflict",
+    "seed": 3,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-false-dedup",
+    "seed": 4,
+    "hidden": false,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-crash-after-effect",
+    "seed": 5,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-unknown-timeout-recover",
+    "seed": 6,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": false
+    },
+    "violations": [
+      "reproducible"
+    ],
+    "ok": false
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-crash-before-reserve",
+    "seed": 7,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-crash-before-charge",
+    "seed": 8,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
+    "correct_ref": false,
+    "schedule_id": "reconciliation-payload-conflict-hidden",
+    "seed": 9,
+    "hidden": true,
+    "compile_status": "success",
+    "runtime_status": "completed",
+    "invariants": {
+      "at_most_one": true,
+      "no_false_dedup": true,
+      "no_lost_effect": true,
+      "payload_consistency": true,
+      "recovery": true,
+      "reproducible": true
+    },
+    "violations": null,
+    "ok": true
+  },
+  {
+    "family": "reconciliation",
+    "semantic_task_id": "recon-t1",
+    "candidate": "m6_replay_new_reference",
     "correct_ref": false,
     "schedule_id": "reconciliation-false-dedup-hidden",
     "seed": 10,

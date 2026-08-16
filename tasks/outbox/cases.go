@@ -53,7 +53,7 @@ type Candidate struct {
 }
 
 // Candidates is the full set shipped with the family: one correct reference and
-// five seeded-bug mutants.
+// six seeded-bug mutants.
 func Candidates() []Candidate {
 	return []Candidate{
 		{"correct", Correct, true, ""},
@@ -62,6 +62,7 @@ func Candidates() []Candidate {
 		{"m3_raw_key_only", M3, false, harness.InvNoFalseDedup},
 		{"m4_vacuous_no_publish", M4, false, harness.InvNoLostEffect},
 		{"m5_recovery_loops", M5, false, harness.InvRecover},
+		{"m6_replay_new_reference", M6, false, harness.InvReproducible},
 	}
 }
 

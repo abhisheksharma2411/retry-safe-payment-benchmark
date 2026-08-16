@@ -30,6 +30,7 @@ MUTANT_TYPES = {
     "m2_no_payload_check": "m2 no-payload-check",
     "m3_raw_key_only": "m3 raw-key-only",
     "m5_recovery_loops": "m5 recovery-loops",
+    "m6_replay_new_reference": "m6 replay-new-reference",
 }
 def mutant_type(name):
     if name in MUTANT_TYPES:
@@ -105,7 +106,8 @@ def main():
                 hidden_pass[t] += 1
 
     order = ["correct", "m1 unstable-identity", "m2 no-payload-check",
-             "m3 raw-key-only", "m4 vacuous-success", "m5 recovery-loops"]
+             "m3 raw-key-only", "m4 vacuous-success", "m5 recovery-loops",
+             "m6 replay-new-reference"]
     order = [t for t in order if t in hidden_total]
 
     # ---- Figure 1: survival curves R_k (measured) ----
@@ -169,7 +171,8 @@ def main():
 
     mut_order = [t for t in ["m1 unstable-identity", "m2 no-payload-check",
                              "m3 raw-key-only", "m4 vacuous-success",
-                             "m5 recovery-loops"] if t in mut_inv]
+                             "m5 recovery-loops",
+                             "m6 replay-new-reference"] if t in mut_inv]
     import numpy as np
     fig, ax = plt.subplots(figsize=(6.6, 3.6))
     bottom = np.zeros(len(mut_order))

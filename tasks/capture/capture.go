@@ -3,7 +3,7 @@
 // after the external effect, unknown (dropped) provider outcomes, and concurrent
 // retries on another instance.
 //
-// It ships a correct reference implementation, five seeded-bug mutants (each
+// It ships a correct reference implementation, six seeded-bug mutants (each
 // failing exactly one invariant), an independent oracle, and public/hidden fault
 // schedules. The rail profile assumed here is Queryable: a service can reconcile
 // an unknown outcome by asking the provider whether an effect already exists.
@@ -253,6 +253,86 @@ func (m *m5) Capture(req Request) harness.Response {
 		for { // BUG: busy-wait forever instead of a bounded recovery
 			_, _ = store.Get(key) // injected op so the kernel can observe the spin
 		}
+	}
+	store.Complete(key, ref)
+	return okResp(ref)
+}
+
+// M6 replay_new_reference: whenever this service reports an effect it did not
+// itself create — a replay of an already-completed identity, or an effect
+// adopted from the rail during recovery — it mints a fresh reference and
+// rewrites the durable record with it, instead of reporting the reference the
+// effect actually carries. At most one effect is still produced, none is lost,
+// distinct identities stay distinct, a changed payload is still rejected, and
+// recovery still terminates in bounds — but a completed operation no longer
+// reports a stable reference. Violates Reproducible.
+//
+// The fault deliberately spans both paths. Confined to the completed-replay path
+// alone it is caught only on the concurrent-retry schedule, which is public in
+// every family, and so would be invisible to the hidden set the benchmark
+// actually scores on.
+type m6 struct{ env harness.Env }
+
+// M6 constructs the unstable-replay-reference mutant.
+func M6(env harness.Env) Service { return &m6{env} }
+
+func (m *m6) Capture(req Request) harness.Response {
+	store, prov := m.env.Store(), m.env.Provider()
+	key := req.Identity.Key()
+	fp := fingerprint(req.Amount)
+
+	if rec, ok := store.Get(key); ok && rec.State != "" {
+		switch rec.State {
+		case "completed":
+			if rec.Fingerprint != fp {
+				return conflict()
+			}
+			return m.adopt(store, key, rec.Ref)
+		case "failed":
+			return harness.Response{Status: "FAILED", Err: rec.ErrCode}
+		case "reserved":
+			if rec.Fingerprint != fp {
+				return conflict()
+			}
+			return m.finish(store, prov, key, req)
+		}
+	}
+
+	if !store.Reserve(key, fp) {
+		// Lost the reservation race: another attempt owns this identity.
+		rec, _ := store.Get(key)
+		if rec.Fingerprint != fp {
+			return conflict()
+		}
+		if rec.State == "completed" {
+			return m.adopt(store, key, rec.Ref)
+		}
+		return inProgress()
+	}
+	return m.finish(store, prov, key, req)
+}
+
+// adopt carries the seeded fault, and only it. The external effect is neither
+// repeated nor lost — what changes is the reference reported for it. The durable
+// record is rewritten to the minted reference, so the store and the effects log
+// disagree about which reference the single effect carries, which is exactly
+// what the reproducibility check reconstructs from the observation.
+func (m *m6) adopt(store harness.Store, key, ref string) harness.Response {
+	fresh := ref + "-replay" // BUG: a completed identity must report a stable reference
+	store.Complete(key, fresh)
+	return okResp(fresh)
+}
+
+// finish still reconciles first and still never produces a second effect. The
+// only change from the reference is that an adopted effect is reported under a
+// minted reference; an effect this attempt creates itself is reported correctly.
+func (m *m6) finish(store harness.Store, prov harness.Provider, key string, req Request) harness.Response {
+	if ref, found, _ := prov.Query(req.Identity); found {
+		return m.adopt(store, key, ref)
+	}
+	ref, err := prov.Charge(req.Identity, req.Amount)
+	if err != nil {
+		return inProgress()
 	}
 	store.Complete(key, ref)
 	return okResp(ref)

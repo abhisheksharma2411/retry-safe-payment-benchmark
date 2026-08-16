@@ -55,12 +55,12 @@ apt install of the Python stack.
 
 ## Expected outputs
 
-- `results/pilot_results.json` — **420 result records** (7 families × 6
+- `results/pilot_results.json` — **490 result records** (7 families × 7
   candidates × 10 schedules), each matching `task-schema/result.schema.json`.
 - `results/metrics_summary.json` — headline numbers. Key values on the reference
-  toolchain: `n_result_records = 420`, `compile_rate = 1.0`,
-  `functional_pass_rate_happy = 0.8333`, `unconditional_safety_rate = 0.7`,
-  `safety_given_functional_hidden = 0.8333`, and the correct reference's hidden
+  toolchain: `n_result_records = 490`, `compile_rate = 1.0`,
+  `functional_pass_rate_happy = 0.8571`, `unconditional_safety_rate = 0.7`,
+  `safety_given_functional_hidden = 0.8056`, and the correct reference's hidden
   survival `R₁ = 1.0`.
 - `results/metrics.csv` — per-candidate-type survival table.
 - `analysis/figures/survival.png`, `analysis/figures/failure_composition.png`,
@@ -94,10 +94,12 @@ The pilot is designed so that oracle validity is checkable, not asserted:
 1. **No false positives.** Every family's correct reference passes all of its
    schedules — public and hidden (`make test-references`; in the pilot, the
    correct reference's hidden survival `R_k = 1.0` for all `k`).
-2. **No false negatives, correctly attributed.** Each of the five seeded-bug
+2. **No false negatives, correctly attributed.** Each of the six seeded-bug
    mutants per family is caught, and is caught by the *specific* invariant it was
    designed to violate (`make test-mutants`). The failure-composition figure
-   shows each mutant type failing via its intended invariant.
+   shows each mutant type failing via its intended invariant. All six financial
+   properties have a dedicated targeted mutant: `m6_replay_new_reference` covers
+   response reproducibility, so no property is validated only incidentally.
 3. **Determinism.** Repeated runs of a `(candidate, schedule, seed)` triple
    produce identical traces and observations (`make test-determinism`), so the
    pilot numbers are exactly reproducible.

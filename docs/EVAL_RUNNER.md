@@ -418,7 +418,7 @@ lost to a refactor of the CLI layer.
 ### The sealed scaffold
 
 The agent has a shell, so it cannot be handed the repository: that would hand it
-`HiddenCases()`, `Correct`, the five mutants, and the oracle. Instead each
+`HiddenCases()`, `Correct`, the six mutants, and the oracle. Instead each
 (family, sample) gets a scaffold built from scratch, containing only:
 
 ```
@@ -438,7 +438,7 @@ Roughly 16 KB — about 4k tokens. What is **absent** is the point:
 |---|---|
 | Hidden schedules | `cases.go` is never copied. The scorer resolves `PublicCases()` and has no flag, argument, or environment variable that makes it resolve anything else. |
 | Oracle internals | `harness/oracle.go` is never copied. The scaffold's harness package is types only — no `CheckFinancial`, no `Spec`, not even the kernel's `Run`. |
-| Correct reference, mutants | The family slice is taken **by declaration name** (`Request`, `Service`, `Factory`), never by line offset, so it stops above `Correct` and `M1`–`M5`. A missing declaration is a hard error, not a quietly truncated file. |
+| Correct reference, mutants | The family slice is taken **by declaration name** (`Request`, `Service`, `Factory`), never by line offset, so it stops above `Correct` and `M1`–`M6`. A missing declaration is a hard error, not a quietly truncated file. |
 
 `go test` still returns real oracle verdicts, because `public_test.go` shells
 out to `bin/t4public`, a per-scaffold binary with the workspace path linked in

@@ -16,6 +16,7 @@
 \def\survivalmthreerawkeyonly{(1,0.8333) (2,0.6911) (3,0.5701) (4,0.4678) (5,0.3816) (6,0.3094) (7,0.2493) (8,0.1994)}  % 35/42 hidden passed
 \def\survivalmfourvacuoussuccess{(1,0.0000) (2,0.0000) (3,0.0000) (4,0.0000) (5,0.0000) (6,0.0000) (7,0.0000) (8,0.0000)}  % 0/42 hidden passed
 \def\survivalmfiverecoveryloops{(1,0.8333) (2,0.6911) (3,0.5701) (4,0.4678) (5,0.3816) (6,0.3094) (7,0.2493) (8,0.1994)}  % 35/42 hidden passed
+\def\survivalmsixreplaynewreference{(1,0.6667) (2,0.4390) (3,0.2854) (4,0.1829) (5,0.1155) (6,0.0718) (7,0.0439) (8,0.0263)}  % 28/42 hidden passed
 %
 % ---------------------------------------------------------------------------
 % Failure composition. Coordinates are (invariant, violating runs). The
@@ -24,16 +25,17 @@
 % Symbolic x coords are the invariant names with underscores stripped.
 % ---------------------------------------------------------------------------
 \def\invariantnames{atmostone,nolosteffect,nofalsededup,payloadconsistency,reproducible,recovery}
-\def\mutantnames{moneunstableidentity,mtwonopayloadcheck,mthreerawkeyonly,mfourvacuoussuccess,mfiverecoveryloops}
+\def\mutantnames{moneunstableidentity,mtwonopayloadcheck,mthreerawkeyonly,mfourvacuoussuccess,mfiverecoveryloops,msixreplaynewreference}
 \def\failcompmoneunstableidentity{(atmostone,21) (nolosteffect,0) (nofalsededup,0) (payloadconsistency,0) (reproducible,0) (recovery,0)}
 \def\failcompmtwonopayloadcheck{(atmostone,0) (nolosteffect,0) (nofalsededup,0) (payloadconsistency,14) (reproducible,0) (recovery,0)}
 \def\failcompmthreerawkeyonly{(atmostone,0) (nolosteffect,14) (nofalsededup,14) (payloadconsistency,0) (reproducible,0) (recovery,0)}
 \def\failcompmfourvacuoussuccess{(atmostone,0) (nolosteffect,70) (nofalsededup,0) (payloadconsistency,0) (reproducible,0) (recovery,0)}
 \def\failcompmfiverecoveryloops{(atmostone,0) (nolosteffect,0) (nofalsededup,0) (payloadconsistency,0) (reproducible,0) (recovery,7)}
-\def\failinvatmostone{(moneunstableidentity,21) (mtwonopayloadcheck,0) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,0)}
-\def\failinvnolosteffect{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,14) (mfourvacuoussuccess,70) (mfiverecoveryloops,0)}
-\def\failinvnofalsededup{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,14) (mfourvacuoussuccess,0) (mfiverecoveryloops,0)}
-\def\failinvpayloadconsistency{(moneunstableidentity,0) (mtwonopayloadcheck,14) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,0)}
-\def\failinvreproducible{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,0)}
-\def\failinvrecovery{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,7)}
-\def\faildist{(atmostone,21) (nolosteffect,84) (nofalsededup,14) (payloadconsistency,14) (reproducible,0) (recovery,7)}
+\def\failcompmsixreplaynewreference{(atmostone,0) (nolosteffect,0) (nofalsededup,0) (payloadconsistency,0) (reproducible,21) (recovery,0)}
+\def\failinvatmostone{(moneunstableidentity,21) (mtwonopayloadcheck,0) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,0) (msixreplaynewreference,0)}
+\def\failinvnolosteffect{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,14) (mfourvacuoussuccess,70) (mfiverecoveryloops,0) (msixreplaynewreference,0)}
+\def\failinvnofalsededup{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,14) (mfourvacuoussuccess,0) (mfiverecoveryloops,0) (msixreplaynewreference,0)}
+\def\failinvpayloadconsistency{(moneunstableidentity,0) (mtwonopayloadcheck,14) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,0) (msixreplaynewreference,0)}
+\def\failinvreproducible{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,0) (msixreplaynewreference,21)}
+\def\failinvrecovery{(moneunstableidentity,0) (mtwonopayloadcheck,0) (mthreerawkeyonly,0) (mfourvacuoussuccess,0) (mfiverecoveryloops,7) (msixreplaynewreference,0)}
+\def\faildist{(atmostone,21) (nolosteffect,84) (nofalsededup,14) (payloadconsistency,14) (reproducible,21) (recovery,7)}

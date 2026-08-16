@@ -5,3 +5,4 @@ m2 no-payload-check,56,70,35,42,0.8333,0.1994
 m3 raw-key-only,56,70,35,42,0.8333,0.1994
 m4 vacuous-success,0,70,0,42,0.0000,0.0000
 m5 recovery-loops,63,70,35,42,0.8333,0.1994
+m6 replay-new-reference,49,70,28,42,0.6667,0.0263

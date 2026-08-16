@@ -15,7 +15,8 @@ PYTHON  ?= python3
 PILOT    = results/pilot_results.json
 
 .PHONY: all smoke test-harness test-references test-mutants test-determinism \
-        test pilot figures reproduce-small reproduce-paper manifest clean help
+        test pilot figures model-figures agent-cost reproduce-small \
+        reproduce-paper manifest clean help
 
 all: reproduce-small
 
@@ -87,6 +88,12 @@ figures:
 model-figures:
 	$(PYTHON) analysis/make_model_figures.py
 	$(PYTHON) analysis/recompute_report.py
+
+## agent-cost: token/cost accounting for the agentic (Claude Code) sessions
+##   Verifies the rate card against each session's CLI-reported cost, so the
+##   dollar figure in the paper is reproducible rather than asserted.
+agent-cost:
+	$(PYTHON) analysis/agent_cost.py
 
 ## reproduce-small: the main reviewer entry point (a few seconds end to end)
 reproduce-small: test pilot figures

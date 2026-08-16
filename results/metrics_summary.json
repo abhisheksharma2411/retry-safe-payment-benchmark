@@ -1,18 +1,19 @@
 {
-  "n_result_records": 420,
+  "n_result_records": 490,
   "n_families": 7,
-  "n_candidates_per_family": 6,
+  "n_candidates_per_family": 7,
   "compile_rate": 1.0,
-  "functional_pass_rate_happy": 0.8333,
+  "functional_pass_rate_happy": 0.8571,
   "unconditional_safety_rate": 0.7,
-  "safety_given_functional_hidden": 0.8333,
+  "safety_given_functional_hidden": 0.8056,
   "hidden_survival_R1": {
     "correct": 1.0,
     "m1 unstable-identity": 0.6667,
     "m2 no-payload-check": 0.8333,
     "m3 raw-key-only": 0.8333,
     "m4 vacuous-success": 0.0,
-    "m5 recovery-loops": 0.8333
+    "m5 recovery-loops": 0.8333,
+    "m6 replay-new-reference": 0.6667
   },
   "hidden_survival_R_at_max_k": {
     "correct": 1.0,
@@ -20,14 +21,15 @@
     "m2 no-payload-check": 0.1994,
     "m3 raw-key-only": 0.1994,
     "m4 vacuous-success": 0.0,
-    "m5 recovery-loops": 0.1994
+    "m5 recovery-loops": 0.1994,
+    "m6 replay-new-reference": 0.0263
   },
   "invariant_violation_counts": {
     "at_most_one": 21,
     "no_lost_effect": 84,
     "no_false_dedup": 14,
     "payload_consistency": 14,
-    "reproducible": 0,
+    "reproducible": 21,
     "recovery": 7
   },
   "per_family_safety_rate": {
