@@ -86,6 +86,7 @@ figures:
 ##   reads the other's input, and this one never touches pilot_results.json.
 model-figures:
 	$(PYTHON) analysis/make_model_figures.py
+	$(PYTHON) analysis/recompute_report.py
 
 ## reproduce-small: the main reviewer entry point (a few seconds end to end)
 reproduce-small: test pilot figures

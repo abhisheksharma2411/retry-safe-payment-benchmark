@@ -119,17 +119,19 @@ Hypergeometric R_k = C(m,k)/C(n,k): the probability a candidate that passed m of
 | System | Condition | m/n | R_1 | R_6 | Saturated |
 |---|---|---|---|---|---|
 | `claude-opus-4-6[1m]` | agentic | 126/126 | 1.0000 | 1.0000 | **yes** |
-| `gemini-3-flash-preview` | zero_shot | 117/126 | 0.9286 | 0.6350 | no |
-| `gemini-3-flash-preview` | retrieval | 124/126 | 0.9841 | 0.9067 | no |
-| `gemini-3-flash-preview` | domain_guided | 113/126 | 0.8968 | 0.5130 | no |
-| `gemini-3.1-pro-preview` | zero_shot | 197/252 | 0.7817 | 0.2244 | no |
-| `gemini-3.1-pro-preview` | retrieval | 239/252 | 0.9484 | 0.7254 | no |
-| `gemini-3.1-pro-preview` | domain_guided | 242/252 | 0.9603 | 0.7824 | no |
-| `gemini-3.6-flash` | zero_shot | 119/126 | 0.9444 | 0.7046 | no |
+| `gemini-3-flash-preview` | zero_shot | 117/126 | 0.9286 | 0.8095 | no |
+| `gemini-3-flash-preview` | retrieval | 124/126 | 0.9841 | 0.9048 | no |
+| `gemini-3-flash-preview` | domain_guided | 113/126 | 0.8968 | 0.8571 | no |
+| `gemini-3.1-pro-preview` | zero_shot | 197/252 | 0.7817 | 0.5238 | no |
+| `gemini-3.1-pro-preview` | retrieval | 239/252 | 0.9484 | 0.8095 | no |
+| `gemini-3.1-pro-preview` | domain_guided | 242/252 | 0.9603 | 0.8810 | no |
+| `gemini-3.6-flash` | zero_shot | 119/126 | 0.9444 | 0.6667 | no |
 | `gemini-3.6-flash` | retrieval | 126/126 | 1.0000 | 1.0000 | **yes** |
 | `gemini-3.6-flash` | domain_guided | 126/126 | 1.0000 | 1.0000 | **yes** |
 
-**Saturated cells (R_k = 1.0 for all k): `claude-opus-4-6[1m]`/agentic, `gemini-3.6-flash`/retrieval, `gemini-3.6-flash`/domain_guided.** These passed every hidden schedule, so the curve is flat at 1.0 and the cell distinguishes nothing. R_6 is where the systems separate: Pro zero-shot collapses to 0.224 while its domain-guided counterpart holds 0.782.
+R_k is the **per-program average** `(1/J) * sum_j C(m_j,k)/C(6,k)`, not a pooled `C(sum m,k)/C(sum n,k)`. The `m/n` column is the underlying count of hidden passes over hidden executions; note `R_1` equals it exactly, and `R_6` equals the robust-success rate in the table above — both identities are asserted when this file is generated.
+
+**Saturated cells (R_k = 1.0 for all k): `claude-opus-4-6[1m]`/agentic, `gemini-3.6-flash`/retrieval, `gemini-3.6-flash`/domain_guided.** These passed every hidden schedule, so the curve is flat at 1.0 and the cell distinguishes nothing. R_6 is where the systems separate: Pro zero-shot falls to 0.524 while its domain-guided counterpart holds 0.881.
 
 ## Caveats
 
@@ -157,7 +159,8 @@ Most of that cell's failures are `compile_error` (20 of 21 failing records), not
 |---|---|
 | `results/model_results.json` | all 2730 records, one per (candidate, schedule) |
 | `results/model_metrics.json` | machine-readable metrics, CIs, survival, provenance |
-| `analysis/figures/model_data.tex` | LaTeX tables + pgfplots coords (`\input`-able) |
+| `analysis/figures/model_data.tex` | survival R_k coords (per-program) |
+| `analysis/figures/model_tables.tex` | LaTeX tables, RQ3/RQ4 macros |
 | `analysis/figures/model_*.png` | the four figures |
 | `results/raw/` | prompts, raw responses, candidates, agent transcripts |
 

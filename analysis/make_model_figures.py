@@ -3,7 +3,7 @@
 
 Input : results/model_results.json  (produced by generation/runner)
 Output: analysis/figures/model_*.png
-        analysis/figures/model_data.tex   (LaTeX tables + pgfplots coords)
+        analysis/figures/model_tables.tex (LaTeX tables + pgfplots coords)
         results/model_metrics.json        (machine-readable)
         results/SUMMARY.md                (plain text)
 
@@ -27,7 +27,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from model_stats import (  # noqa: E402
     ALPHA, BOOTSTRAP, SEED, bootstrap_indices, ci_from_counts, ci_from_delta,
-    survival_rk, tex_name,
+    survival_curve, tex_name,
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -216,17 +216,29 @@ def failure_composition(rows):
     return out
 
 
-def survival(cells):
-    """(system, condition) -> {k: R_k} over the pooled hidden set."""
+def survival(stats_rows, cells):
+    """(system, condition) -> {k: R_k}, averaged PER PROGRAM.
+
+    R_k = (1/J) * sum_j C(m_j,k)/C(6,k). Pooling m and n across programs first
+    is a different and wrong quantity -- it treats runs of different programs as
+    interchangeable draws and collapses the tail (Pro zero-shot pooled R_6 =
+    0.224 against the correct 0.524). See analysis/model_stats.py.
+    """
+    per_program = defaultdict(list)
+    for r in stats_rows:
+        if r["hidden"]:
+            key = (r["resolved_model"], r["condition"])
+            per_program[(key, r["family"], r["candidate"])].append(r)
+    passes = defaultdict(list)
+    for (key, _fam, _cand), recs in per_program.items():
+        passes[key].append(sum(1 for x in recs if x["ok"]))
     out = {}
-    for key, entry in cells.items():
-        m = entry["metrics"]["hidden_safety"]["numerator"]
-        n = entry["metrics"]["hidden_safety"]["denominator"]
-        ks = list(range(1, 9))
+    for key, ms in passes.items():
+        curve = survival_curve(ms, 6, 6)
         out[key] = {
-            "m": m, "n": n,
-            "curve": {k: survival_rk(m, n, k) for k in ks},
-            "saturated": m == n,
+            "m": sum(ms), "n": 6 * len(ms), "J": len(ms),
+            "curve": curve,
+            "saturated": all(m == 6 for m in ms),
         }
     return out
 
@@ -612,11 +624,19 @@ def write_summary(cells, surv, comp, rq3, rq3_robust, inversion, gaps, prov,
         L.append(f"| `{k[0]}` | {k[1]} | {s['m']}/{s['n']} | {s['curve'][1]:.4f} | "
                  f"{s['curve'][6]:.4f} | {'**yes**' if s['saturated'] else 'no'} |")
     sat = [f"`{k[0]}`/{k[1]}" for k in keys if surv[k]["saturated"]]
+    pro_zs = surv[("gemini-3.1-pro-preview", "zero_shot")]["curve"][6]
+    pro_dg = surv[("gemini-3.1-pro-preview", "domain_guided")]["curve"][6]
     L += ["",
+          "R_k is the **per-program average** `(1/J) * sum_j C(m_j,k)/C(6,k)`, not a "
+          "pooled `C(sum m,k)/C(sum n,k)`. The `m/n` column is the underlying count "
+          "of hidden passes over hidden executions; note `R_1` equals it exactly, and "
+          "`R_6` equals the robust-success rate in the table above — both identities "
+          "are asserted when this file is generated.",
+          "",
           f"**Saturated cells (R_k = 1.0 for all k): {', '.join(sat)}.** These passed "
           "every hidden schedule, so the curve is flat at 1.0 and the cell "
           "distinguishes nothing. R_6 is where the systems separate: Pro zero-shot "
-          "collapses to 0.224 while its domain-guided counterpart holds 0.782.",
+          f"falls to {pro_zs:.3f} while its domain-guided counterpart holds {pro_dg:.3f}.",
           "",
           "## Caveats", "",
           "### 1. The agentic condition saturates — it has no discriminating power here",
@@ -673,7 +693,7 @@ def write_summary(cells, surv, comp, rq3, rq3_robust, inversion, gaps, prov,
           "| Path | Contents |", "|---|---|",
           "| `results/model_results.json` | all 2730 records, one per (candidate, schedule) |",
           "| `results/model_metrics.json` | machine-readable metrics, CIs, survival, provenance |",
-          "| `analysis/figures/model_data.tex` | LaTeX tables + pgfplots coords (`\\input`-able) |",
+          "| `analysis/figures/model_data.tex` | survival R_k coords (per-program) |\n| `analysis/figures/model_tables.tex` | LaTeX tables, RQ3/RQ4 macros |",
           "| `analysis/figures/model_*.png` | the four figures |",
           "| `results/raw/` | prompts, raw responses, candidates, agent transcripts |",
           "",
@@ -692,7 +712,7 @@ def main():
     rng = np.random.default_rng(SEED)
     cells, idx_by_system = compute(stats, families, rng)
     comp = failure_composition(rows)
-    surv = survival(cells)
+    surv = survival(rows, cells)
     rq3 = deltas(stats, families, idx_by_system, "hidden_safety",
                  "domain_guided", "zero_shot")
     rq3_robust = deltas(stats, families, idx_by_system, "robust_success",
@@ -704,7 +724,7 @@ def main():
 
     names = figures(cells, surv, comp, rq3, gaps)
     write_tex(cells, surv, comp, rq3, gaps, prov,
-              os.path.join(FIGDIR, "model_data.tex"))
+              os.path.join(FIGDIR, "model_tables.tex"))
 
     # cost/tokens are per candidate, but recorded on every record
     seen, tokens, cost = set(), 0, 0.0
@@ -735,7 +755,9 @@ def main():
         "rq_inversion_domain_guided_minus_retrieval": inversion,
         "rq4_public_minus_hidden": {f"{s}||{c}": v for (s, c), v in gaps.items()},
         "failure_composition": {f"{s}||{c}": dict(v) for (s, c), v in comp.items()},
-        "survival": {f"{s}||{c}": {"m": v["m"], "n": v["n"], "saturated": v["saturated"],
+        "survival": {f"{s}||{c}": {"m": v["m"], "n": v["n"], "J": v["J"],
+                                   "saturated": v["saturated"],
+                                   "aggregation": "per-program mean of C(m_j,k)/C(6,k)",
                                    "curve": {str(k): r for k, r in v["curve"].items()}}
                      for (s, c), v in surv.items()},
         "totals": {"tokens": tokens, "cost_usd": round(cost, 4)},
@@ -751,7 +773,7 @@ def main():
         os.path.join(ROOT, "results", "SUMMARY.md"),
     )
 
-    print(f"figures + model_data.tex written to {FIGDIR}")
+    print(f"figures + model_tables.tex written to {FIGDIR}")
     print("SUMMARY.md written")
     print(f"model_metrics.json written ({len(rows)} records, {len(seen)} candidates)")
     return out

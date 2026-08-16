@@ -86,11 +86,15 @@ def ci_from_delta(nums_a, dens_a, nums_b, dens_b, idx):
 
 
 def survival_rk(m, n, k):
-    """R_k = C(m,k)/C(n,k): the probability that a candidate which passed m of n
-    hidden schedules survives k of them drawn without replacement.
+    """R_k = C(m,k)/C(n,k) for ONE program that passed m of its n hidden schedules.
 
-    Hypergeometric, so it does not assume schedules are independent — which they
-    are not (review issue T4)."""
+    The probability that program survives k of its own hidden schedules drawn
+    without replacement. Hypergeometric, so it does not assume schedules are
+    independent — which they are not (review issue T4).
+
+    This is a per-program quantity. To summarise a condition, average it across
+    programs with `survival_curve`; do not pool m and n across programs first.
+    """
     if k <= 0:
         return 1.0
     if k > n:
@@ -99,6 +103,32 @@ def survival_rk(m, n, k):
     if den == 0:
         return 0.0
     return math.comb(m, k) / den
+
+
+def survival_curve(hidden_passes, n_hidden=6, kmax=6):
+    """R_k averaged over programs: R_k = (1/J) * sum_j C(m_j,k)/C(n,k).
+
+    `hidden_passes` is one m_j per generated program.
+
+    Averaging per program is not a stylistic choice — pooling is a different and
+    wrong quantity. Pooling forms C(sum m_j, k)/C(sum n_j, k), which asks "draw k
+    schedule-executions from the union of every program's runs", treating results
+    from *different programs* as interchangeable draws. The question R_k is meant
+    to answer is about one program facing k faults, so the average of per-program
+    curves is the estimator, and pooling understates it badly: for Pro zero-shot
+    the pooled form gives R_6 = 0.224 against the correct 0.524.
+
+    Two identities follow directly and are asserted by the caller:
+        R_1 == mean hidden pass rate       (C(m,1)/C(n,1) == m/n)
+        R_n == robust-success rate         (C(m,n)/C(n,n) == 1 iff m == n)
+    """
+    if not hidden_passes:
+        return {k: float("nan") for k in range(1, kmax + 1)}
+    j = len(hidden_passes)
+    return {
+        k: sum(survival_rk(m, n_hidden, k) for m in hidden_passes) / j
+        for k in range(1, kmax + 1)
+    }
 
 
 _DIGITS = {
